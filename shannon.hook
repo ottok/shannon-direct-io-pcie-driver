@@ -1,0 +1,8 @@
+#!/bin/sh -e
+# mkinitramfs hook for shannon
+
+. /usr/share/initramfs-tools/hook-functions
+
+manual_add_modules shannon
+
+exit 0

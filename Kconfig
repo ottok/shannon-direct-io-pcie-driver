@@ -1,0 +1,13 @@
+config BLK_DEV_SHANNON
+	tristate "Shannon PCIE card support"
+	depends on PCI 
+	default m
+	---help---
+	  Shannon PCIE card support.
+
+
+config SHANNON_EMU
+	tristate "Shannon FPGA Emulator"
+	default n
+	---help---
+	  Shannon FPGA Emulator.

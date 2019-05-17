@@ -1,0 +1,173 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+# Sample debian/rules that uses debhelper.
+# This file was originally written by Joey Hess and Craig Small.
+# As a special exception, when this file is copied by dh-make into a
+# dh-make output file, you may use that output file without restriction.
+# This special exception was added by Craig Small in version 0.37 of dh-make.
+#
+# This version is for a hypothetical package that can build a kernel modules
+# architecture-dependant package via make-kpkg, as well as an
+# architecture-independent module source package, and other packages
+# either dep/indep for things like common files or userspace components
+# needed for the kernel modules.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+export DH_OPTIONS
+
+ifneq (1,$(words $(CURDIR)))
+$(error Building from a directory that contains spaces in the path is not supported - please move this build tree appropriately)
+endif
+
+empty  :=
+space  := $(empty) $(empty)
+curdir := $(subst $(space),\$(space),$(CURDIR))
+
+shannon_oem_name := shannon
+shannon_source_name := shannon-module
+shannon_driver_name := shannon-module
+shannon_version := 3.2.2.3
+
+deb_kernel_version ?= $(shell uname -r)
+deb_nice_kernel_version := $(subst -,_,$(deb_kernel_version))
+deb_kernel_src := /lib/modules/$(deb_kernel_version)/build
+
+FORCE: ;
+
+# The in-place modification that adds the kernel version.
+debian/control: FORCE
+	sed -i 's/^Package: $(shannon_driver_name).*/Package: $(shannon_driver_name)-$(deb_kernel_version)/' $@
+	sed -i 's/deb_kernel_version=.*/deb_kernel_version=$(deb_kernel_version)/' debian/preinst
+	sed -i 's/deb_kernel_version=.*/deb_kernel_version=$(deb_kernel_version)/' debian/postinst
+	sed -i 's/deb_kernel_version=.*/deb_kernel_version=$(deb_kernel_version)/' debian/postrm
+
+configure: configure-stamp
+configure-stamp: debian/control
+	dh_testdir
+	# Add here commands to configure the package.
+
+	touch configure-stamp
+
+
+build-arch: configure-stamp  build-arch-stamp
+build-arch-stamp: 
+	dh_testdir
+
+	# Add here command to compile/build the package.
+#	tar xf $(shannon_source_name)_$(shannon_version).tar.gz
+
+	rm -rf driver_source
+	cp -r $(shannon_source_name)_$(shannon_version) driver_source
+
+	if ! $(MAKE) \
+		-C driver_source \
+		KERNEL_SRC=$(deb_kernel_src) \
+		modules; then \
+		printf "ERROR:\n"; \
+		exit 1; \
+	fi
+
+	touch $@
+
+build-indep:  configure-stamp build-indep-stamp
+build-indep-stamp: 
+	dh_testdir
+
+	# Add here command to compile/build the arch indep package.
+	# It's ok not to do anything here, if you don't need to build
+	#  anything for this package.
+	#docbook-to-man debian/shannon.sgml > shannon.1
+
+	touch $@
+
+build: build-arch build-indep
+
+clean: 
+	dh_testdir
+	#dh_testroot
+	rm -f build-arch-stamp build-indep-stamp configure-stamp
+
+	# Add here commands to clean up after the build process.
+	# $(MAKE) clean
+	-rm -rf $(CURDIR)/driver_source
+
+	sed -i 's/^Package: $(shannon_driver_name).*/Package: $(shannon_driver_name)/' debian/control
+
+	dh_clean
+
+install: DH_OPTIONS=
+install: build
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+
+	mkdir -p "$(CURDIR)/debian/$(shannon_driver_name)-$(deb_kernel_version)/lib/modules/$(deb_kernel_version)/extra"
+	cp driver_source/$(shannon_oem_name).ko \
+		"$(CURDIR)/debian/$(shannon_driver_name)-$(deb_kernel_version)/lib/modules/$(deb_kernel_version)/extra"
+
+
+# Build architecture-independent files here.
+# Pass -i to all debhelper commands in this target to reduce clutter.
+binary-indep: build install
+	dh_testdir -i
+	dh_testroot -i
+	dh_installchangelogs  -i
+	dh_installdocs -i
+	dh_installexamples -i
+#	dh_install -i
+#	dh_installmenu -i
+#	dh_installdebconf -i
+#	dh_installlogrotate -i
+#	dh_installemacsen -i
+#	dh_installpam -i
+#	dh_installmime -i
+#	dh_installinit -i
+#	dh_installcron -i
+#	dh_installinfo -i
+	dh_installman -i
+	dh_link -i
+	dh_compress -i
+	dh_fixperms -i
+	dh_installdeb -i
+#	dh_perl -i
+#	dh_makeshlibs -i
+	dh_installdeb -i
+	dh_shlibdeps -i
+	dh_gencontrol -i
+	dh_md5sums -i
+	dh_builddeb -i
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir -s
+	dh_testroot -s
+#	dh_installdebconf -s
+	dh_installdocs -s
+	dh_installexamples -s
+	dh_installmenu -s
+#	dh_installlogrotate -s
+#	dh_installemacsen -s
+#	dh_installpam -s
+#	dh_installmime -s
+#	dh_installinit -s
+	dh_installcron -s
+#	dh_installman -s
+	dh_installinfo -s
+	dh_installchangelogs  -s
+	dh_strip -s
+	dh_link -s
+	dh_compress -s
+	dh_fixperms -s
+#	dh_makeshlibs -s
+	dh_installdeb -s
+#	dh_perl -s
+	dh_shlibdeps -s
+	dh_gencontrol -s
+	dh_md5sums -s
+	dh_builddeb -s
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install configure binary-modules

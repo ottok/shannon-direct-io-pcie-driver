@@ -1,0 +1,44 @@
+#COMMIT_REV := $(shell git describe  --always --abbrev=12)
+COMMIT_REV := 3.2.2.3
+DKMS_DEST ?= /var/lib/dkms/shannon/$(COMMIT_REV)/source
+KERNEL_VERSION ?= $(shell uname -r)
+# statically link for inclusion in initramfs
+CFLAGS += -static
+export COMMIT_REV CFLAGS
+
+.PHONY: all
+all: install
+
+.PHONY: install
+install: build
+	dkms install -m shannon -v $(COMMIT_REV)
+
+.PHONY: build
+build: src_install
+	dkms build -m shannon -v $(COMMIT_REV)
+
+deb:	build
+	dkms mkdeb -m shannon -v $(COMMIT_REV)
+
+rpm:	build
+	dkms mkrpm -m shannon -v $(COMMIT_REV)
+
+.PHONY: src_install
+src_install:
+	install -o root -g root -m 0755 -d $(DKMS_DEST)
+	rsync -r . $(DKMS_DEST)/
+	sed "s/PACKAGE_VERSION=/PACKAGE_VERSION=$(COMMIT_REV)/" dkms.conf > "$(DKMS_DEST)/dkms.conf"
+
+.PHONY: boot_conf
+boot_conf:
+	# do mkinitramfs install if present
+	if test -d /etc/initramfs-tools/hooks; then \
+		install -o root -g root shannon.hook /etc/initramfs-tools/hooks/shannon ; \
+		update-initramfs -k $(shell uname -r) -u ; \
+	fi
+
+.PHONY: clean
+clean:
+	$(MAKE) -f Makefile clean
+	dkms remove -m shannon -v $(COMMIT_REV) --all
+	rm /etc/initramfs-tools/hooks/shannon.hook
