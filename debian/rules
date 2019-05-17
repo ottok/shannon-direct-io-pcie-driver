@@ -58,11 +58,8 @@ build-arch-stamp:
 	# Add here command to compile/build the package.
 #	tar xf $(shannon_source_name)_$(shannon_version).tar.gz
 
-	rm -rf driver_source
-	cp -r $(shannon_source_name)_$(shannon_version) driver_source
-
 	if ! $(MAKE) \
-		-C driver_source \
+		-C . \
 		KERNEL_SRC=$(deb_kernel_src) \
 		modules; then \
 		printf "ERROR:\n"; \
