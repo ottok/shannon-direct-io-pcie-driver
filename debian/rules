@@ -86,10 +86,6 @@ clean:
 	#dh_testroot
 	rm -f build-arch-stamp build-indep-stamp configure-stamp
 
-	# Add here commands to clean up after the build process.
-	# $(MAKE) clean
-	-rm -rf $(CURDIR)/driver_source
-
 	sed -i 's/^Package: $(shannon_driver_name).*/Package: $(shannon_driver_name)/' debian/control
 
 	dh_clean
@@ -102,7 +98,7 @@ install: build
 	dh_installdirs
 
 	mkdir -p "$(CURDIR)/debian/$(shannon_driver_name)-$(deb_kernel_version)/lib/modules/$(deb_kernel_version)/extra"
-	cp driver_source/$(shannon_oem_name).ko \
+	cp $(shannon_oem_name).ko \
 		"$(CURDIR)/debian/$(shannon_driver_name)-$(deb_kernel_version)/lib/modules/$(deb_kernel_version)/extra"
 
 
