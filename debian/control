@@ -1,5 +1,5 @@
 Source: shannon
-Section: non-free
+Section: kernel
 Priority: optional
 Maintainer: Yan Gao <gaoyan@shannon-data.com>
 Build-Depends: bzip2,
