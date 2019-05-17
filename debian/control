@@ -2,7 +2,8 @@ Source: shannon
 Section: non-free
 Priority: optional
 Maintainer: Yan Gao <gaoyan@shannon-data.com>
-Build-Depends: debhelper (>= 7), bzip2
+Build-Depends: bzip2,
+               debhelper (>= 7)
 Standards-Version: 3.8.3
 Homepage: http://www.shannon-sys.com
 
