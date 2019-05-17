@@ -423,22 +423,7 @@ void shannon_pci_reset_notify(struct pci_dev *pdev, bool prepare)
 		shannon_pci_reset_finished((shannon_pci_dev_t *)pdev);
 }
 
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0)
-struct pci_error_handlers shannon_pci_error_handlers = {
-	.reset_notify = shannon_pci_reset_notify,
-};
-#else
-#ifdef RHEL_RELEASE_CODE
-#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 0)
-struct pci_driver_rh shannon_pci_driver_rh = {
-	.size = sizeof(struct pci_driver_rh),
-	.reset_notify = shannon_pci_reset_notify,
-};
-#endif
-#endif
 struct pci_error_handlers shannon_pci_error_handlers = {NULL};
-#endif
 
 static struct pci_driver shannon_driver = {
 	.name           = "shannon",
