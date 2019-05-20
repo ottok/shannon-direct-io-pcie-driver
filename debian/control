@@ -3,7 +3,7 @@ Section: kernel
 Priority: optional
 Maintainer: Yan Gao <gaoyan@shannon-data.com>
 Build-Depends: bzip2,
-               debhelper (>= 7),
+               debhelper (>= 9),
                dkms,
                linux-headers-generic
 Standards-Version: 3.8.3
