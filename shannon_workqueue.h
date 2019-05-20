@@ -27,7 +27,6 @@ extern int shannon_queue_delayed_work(shannon_workqueue_struct_t*wq, struct shan
 extern int shannon_schedule_delayed_work(struct shannon_delayed_work *work, unsigned long delay);
 extern int shannon_schedule_work(struct shannon_work_struct *work);
 extern void shannon_cancel_delayed_work(struct shannon_delayed_work *work);
-extern int __shannon_cancel_delayed_work(struct shannon_delayed_work *work);
 extern void shannon_work_clear_pending(struct shannon_work_struct *work);
 
 extern shannon_workqueue_struct_t *shannon_create_singlethread_workqueue(const char *name);

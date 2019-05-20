@@ -45,18 +45,37 @@ ssize_t debug_cdev_read(struct file *file, char __user *buf, size_t count, loff_
 			goto out;
 		}
 		*f_pos += count;
-	} else if (dev->type == SCATTER_MEMBLOCK_TYPE) {
+	} else if (dev->type == MAPTABLE_MEMBLOCK_TYPE) {
 		smb = (struct scatter_memblock *)dev->buf;
 		remain = count;
 		while (remain > 0) {
-			data_len = (remain < (smb->memblock_size - ((*f_pos) % smb->memblock_size)) ? remain : (smb->memblock_size - ((*f_pos) % smb->memblock_size)));
-			if (((*f_pos) % smb->memblock_size) + data_len > smb->memblock_size)
-				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%mb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % smb->memblock_size, data_len);
+			data_len = (remain < (MAPTABLE_MEMBLOCK_SIZE - ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE)) ? remain : (MAPTABLE_MEMBLOCK_SIZE - ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE)));
+			if (((*f_pos) % MAPTABLE_MEMBLOCK_SIZE) + data_len > MAPTABLE_MEMBLOCK_SIZE)
+				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%mb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % MAPTABLE_MEMBLOCK_SIZE, data_len);
 			if (unlikely(check_and_alloc_memblock(smb, *f_pos))) {
 				ret = -EFAULT;
 				goto out;
 			}
-			if (copy_to_user(buf + buf_offset, smb->memblock_list[(*f_pos) / smb->memblock_size] + ((*f_pos) % smb->memblock_size),  data_len)) {
+			if (copy_to_user(buf + buf_offset, ((u8 *)smb->memblock_list[(*f_pos) / MAPTABLE_MEMBLOCK_SIZE]) + ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE),  data_len)) {
+				ret = -EFAULT;
+				goto out;
+			}
+			*f_pos += data_len;
+			remain -= data_len;
+			buf_offset += data_len;
+		}
+	} else if (dev->type == TEMPTABLE_MEMBLOCK_TYPE) {
+		smb = (struct scatter_memblock *)dev->buf;
+		remain = count;
+		while (remain > 0) {
+			data_len = (remain < (TEMPTABLE_MEMBLOCK_SIZE - ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE)) ? remain : (TEMPTABLE_MEMBLOCK_SIZE - ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE)));
+			if (((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE) + data_len > TEMPTABLE_MEMBLOCK_SIZE)
+				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%mb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % TEMPTABLE_MEMBLOCK_SIZE, data_len);
+			if (unlikely(check_and_alloc_memblock(smb, *f_pos))) {
+				ret = -EFAULT;
+				goto out;
+			}
+			if (copy_to_user(buf + buf_offset, ((u8 *)(&smb->memblock_list[(*f_pos) / TEMPTABLE_MEMBLOCK_SIZE]->temptable_slot[0])) + ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE),  data_len)) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -93,18 +112,18 @@ ssize_t debug_cdev_write(struct file *file, const char __user *buf, size_t count
 		}
 
 		*f_pos += count;
-	} else if (dev->type == SCATTER_MEMBLOCK_TYPE) {
+	} else if (dev->type == MAPTABLE_MEMBLOCK_TYPE) {
 		smb = (struct scatter_memblock *)dev->buf;
 		remain = count;
 		while (remain > 0) {
-			data_len = (remain < (smb->memblock_size - ((*f_pos) % smb->memblock_size)) ? remain : (smb->memblock_size - ((*f_pos) % smb->memblock_size)));
-			if (((*f_pos) % smb->memblock_size) + data_len > smb->memblock_size)
-				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%mb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % smb->memblock_size, data_len);
+			data_len = (remain < (MAPTABLE_MEMBLOCK_SIZE - ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE)) ? remain : (MAPTABLE_MEMBLOCK_SIZE - ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE)));
+			if (((*f_pos) % MAPTABLE_MEMBLOCK_SIZE) + data_len > MAPTABLE_MEMBLOCK_SIZE)
+				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%smb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % MAPTABLE_MEMBLOCK_SIZE, data_len);
 			if (unlikely(check_and_alloc_memblock(smb, *f_pos))) {
 				ret = -EFAULT;
 				goto out;
 			}
-			if (copy_from_user(smb->memblock_list[(*f_pos) / smb->memblock_size] + ((*f_pos) % smb->memblock_size), buf + buf_offset, data_len)) {
+			if (copy_from_user((u8 *)(smb->memblock_list[(*f_pos) / MAPTABLE_MEMBLOCK_SIZE]) + ((*f_pos) % MAPTABLE_MEMBLOCK_SIZE), buf + buf_offset, data_len)) {
 				ret = -EFAULT;
 				goto out;
 			}
@@ -112,7 +131,25 @@ ssize_t debug_cdev_write(struct file *file, const char __user *buf, size_t count
 			remain -= data_len;
 			buf_offset += data_len;
 		}
-
+	} else if (dev->type == TEMPTABLE_MEMBLOCK_TYPE) {
+		smb = (struct scatter_memblock *)dev->buf;
+		remain = count;
+		while (remain > 0) {
+			data_len = (remain < (TEMPTABLE_MEMBLOCK_SIZE - ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE)) ? remain : (TEMPTABLE_MEMBLOCK_SIZE - ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE)));
+			if (((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE) + data_len > TEMPTABLE_MEMBLOCK_SIZE)
+				shannon_err("f_pos + data_len > memblock_size, offset=%ld, f_pos%smb->memblock_size=%ld, data_len=%ld\n", *f_pos, (*f_pos) % TEMPTABLE_MEMBLOCK_SIZE, data_len);
+			if (unlikely(check_and_alloc_memblock(smb, *f_pos))) {
+				ret = -EFAULT;
+				goto out;
+			}
+			if (copy_from_user((u8 *)(&smb->memblock_list[(*f_pos) / TEMPTABLE_MEMBLOCK_SIZE]->temptable_slot[0]) + ((*f_pos) % TEMPTABLE_MEMBLOCK_SIZE), buf + buf_offset, data_len)) {
+				ret = -EFAULT;
+				goto out;
+			}
+			*f_pos += data_len;
+			remain -= data_len;
+			buf_offset += data_len;
+		}
 	}
 	ret = count;
 out:

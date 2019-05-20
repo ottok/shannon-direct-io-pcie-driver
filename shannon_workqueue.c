@@ -46,6 +46,7 @@ int shannon_queue_work(shannon_workqueue_struct_t *wq, struct shannon_work_struc
 shannon_workqueue_struct_t *shannon_create_singlethread_workqueue(const char *name)
 {
 	return create_singlethread_workqueue(name);
+//	return alloc_ordered_workqueue("%s", WQ_MEM_RECLAIM | WQ_HIGHPRI, name);
 }
 
 shannon_workqueue_struct_t *shannon_create_workqueue(const char *name)
@@ -71,7 +72,6 @@ void shannon_cancel_delayed_work(struct shannon_delayed_work *work)
 	cancel_delayed_work((struct work_struct *)work);
 #endif
 }
-
 
 int shannon_queue_delayed_work(shannon_workqueue_struct_t *wq, struct shannon_delayed_work *work, unsigned long delay)
 {
@@ -181,13 +181,13 @@ int rt_thread_fn(void *data)
 		shannon_wake_up(&rtwq->flush_event);
 		if (unlikely(shannon_kthread_should_stop()))
 			break;
+		flags = shannon_spin_lock_irqsave(&rtwq->lock);
 		if (shannon_list_empty(&rtwq->list)) {
 			shannon_set_current_state(SHN_TASK_INTERRUPTIBLE);
-			if (shannon_list_empty(&rtwq->list))
-				shannon_schedule();
-			else
-				__shannon_set_current_state(SHN_TASK_RUNNING);
-		}
+			shannon_spin_unlock_irqrestore(&rtwq->lock, flags);
+			shannon_schedule();
+		} else
+			shannon_spin_unlock_irqrestore(&rtwq->lock, flags);
 	}
 
 	return 0;

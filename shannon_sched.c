@@ -110,6 +110,12 @@ int set_thread_normal(void)
 	return sched_setscheduler(current, SCHED_NORMAL, &param);
 }
 
+int set_thread_highest_prio_normal(void)
+{
+	struct sched_param param = { .sched_priority = MAX_PRIO - 1 };
+	return sched_setscheduler(current, SCHED_NORMAL, &param);
+}
+
 int set_thread_rt(void)
 {
 	struct sched_param param = { .sched_priority = MAX_USER_RT_PRIO-1 };

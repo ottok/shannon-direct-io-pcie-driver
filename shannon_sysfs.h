@@ -153,12 +153,14 @@ extern shannon_ssize_t pci_address_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t pci_class_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t linkcap_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t linksta_show(struct shannon_dev *sdev, char *buf);
-extern shannon_ssize_t period_read_period_show(struct shannon_dev *sdev, char *buf);
-extern shannon_ssize_t period_read_period_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
-extern shannon_ssize_t period_read_ppa_show(struct shannon_dev *sdev, char *buf);
-extern shannon_ssize_t period_read_ppa_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t first_read_period_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t first_read_period_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t first_read_ppa_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t first_read_ppa_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t switch_microcode_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t switch_microcode_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t latency_threshold_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t latency_threshold_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t print_latency_interval_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t print_latency_interval_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t hard_queue_limit_show(struct shannon_dev *, char *buf);
@@ -171,6 +173,10 @@ extern shannon_ssize_t ecc_failure_rate_threshold_store(struct shannon_dev *sdev
 extern shannon_ssize_t cps_crc_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t fast_read_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t fast_read_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t in_write_chunk_factor_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t in_write_chunk_factor_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t buffer_write_policy_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t buffer_write_policy_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 
 extern shannon_ssize_t update_irq_delay_interval_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t update_irq_delay_interval_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
@@ -190,6 +196,8 @@ extern shannon_ssize_t write_threshold_factor_show(struct shannon_dev *sdev, cha
 extern shannon_ssize_t write_threshold_factor_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t read_threshold_factor_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t read_threshold_factor_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t discard_large_unit_threshold_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t discard_large_unit_threshold_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t drop_cache_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t drop_cache_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t prefetch_seqread_threshold_show(struct shannon_dev *sdev, char *buf);
@@ -222,9 +230,13 @@ extern shannon_ssize_t pending_bios_ns_show(struct shannon_namespace *ns, char *
 extern shannon_ssize_t nonaligned_bios_ns_show(struct shannon_namespace *ns, char *buf);
 extern shannon_ssize_t seq_num_ns_show(struct shannon_namespace *ns, char *buf);
 extern shannon_ssize_t rmw_list_ns_show(struct shannon_namespace *ns, char *buf);
+extern shannon_ssize_t latency_threshold_ns_show(struct shannon_namespace *ns, char *buf);
+extern shannon_ssize_t latency_threshold_ns_store(struct shannon_namespace *ns, const char *buf, shannon_size_t count);
 extern shannon_ssize_t print_latency_interval_ns_show(struct shannon_namespace *ns, char *buf);
 extern shannon_ssize_t print_latency_interval_ns_store(struct shannon_namespace *ns, const char *buf, shannon_size_t count);
 extern shannon_ssize_t user_defined_name_ns_show(struct shannon_namespace *ns, char *buf);
+extern shannon_ssize_t discard_large_unit_threshold_ns_show(struct shannon_namespace *ns, char *buf);
+extern shannon_ssize_t discard_large_unit_threshold_ns_store(struct shannon_namespace *ns, const char *buf, shannon_size_t count);
 extern int shannon_sysfs_init_ns(shannon_kobject_t *skobj);
 extern void shannon_sysfs_exit_ns(shannon_kobject_t *skobj);
 
@@ -239,5 +251,7 @@ extern shannon_ssize_t overprovision_pool_show(struct shannon_pool *spool, char 
 extern shannon_ssize_t overprovision_pool_store(struct shannon_pool *spool, const char *buf, shannon_size_t count);
 extern shannon_ssize_t hard_queue_limit_pool_show(struct shannon_pool *spool, char *buf);
 extern shannon_ssize_t hard_queue_limit_pool_store(struct shannon_pool *spool, const char *buf, shannon_size_t count);
+extern shannon_ssize_t read_cmd_limit_pool_show(struct shannon_pool *spool, char *buf);
+extern shannon_ssize_t read_cmd_limit_pool_store(struct shannon_pool *spool, const char *buf, shannon_size_t count);
 
 #endif /* __SHANNON_SYSFS_H */

@@ -90,6 +90,12 @@ static inline int shannon_list_empty_careful(const struct shannon_list_head *hea
 	     &pos->member != (head); 	\
 	     pos = shannon_list_entry(pos->member.prev, typeof(*pos), member))
 
+#define shannon_list_for_each_entry_reverse_safe(pos, n, head, member)			\
+	for (pos = shannon_list_entry((head)->prev, typeof(*pos), member),	\
+		n = shannon_list_entry(pos->member.prev, typeof(*pos), member);	\
+	     &pos->member != (head); 					\
+	     pos = n, n = shannon_list_entry(n->member.prev, typeof(*n), member))
+
 #define shannon_list_for_each_entry_safe(pos, n, head, member)			\
 	for (pos = shannon_list_entry((head)->next, typeof(*pos), member),	\
 		n = shannon_list_entry(pos->member.next, typeof(*pos), member);	\

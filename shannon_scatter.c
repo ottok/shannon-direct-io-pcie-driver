@@ -2,6 +2,7 @@
 #include <linux/mm.h>
 #include <linux/slab.h>
 #include <linux/scatterlist.h>
+#include <linux/vmalloc.h>
 #include <linux/version.h>
 
 shannon_dma_addr_t shannon_sg_dma_address(shannon_sg_list_t *sg)
@@ -45,9 +46,29 @@ shannon_sg_list_t *shannon_sg_alloc(unsigned int nents, shannon_gfp_t gfp_mask)
 	return kzalloc(sizeof(struct scatterlist) * nents, gfp_mask);
 }
 
+shannon_sg_list_t *shannon_sg_vzalloc(unsigned int nents)
+{
+	u64 size = sizeof(struct scatterlist) * nents;
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
+	return vzalloc(size);
+#else
+	void *addr = vmalloc(size);
+	if (addr)
+		memset(addr, 0, size);
+
+	return addr;
+#endif
+}
+
 void shannon_sg_free(shannon_sg_list_t *sgl, unsigned int nents)
 {
 	kfree(sgl);
+}
+
+void shannon_sg_vfree(shannon_sg_list_t *sgl, unsigned int nents)
+{
+	vfree(sgl);
 }
 
 void shannon_sg_init_table(shannon_sg_list_t *sgl, unsigned int nents)

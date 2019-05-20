@@ -95,14 +95,14 @@ extern int shannon_dma_map_sg(shannon_pci_dev_t *pdev, shannon_sg_list_t *sg, in
 extern void shannon_dma_unmap_sg(shannon_pci_dev_t *pdev, shannon_sg_list_t *sg, int nents, int dir);
 extern shannon_dma_addr_t shannon_dma_map_single(shannon_pci_dev_t *pdev, void *ptr, shannon_size_t size, int dir);
 extern void shannon_dma_unmap_single(shannon_pci_dev_t *pdev, shannon_dma_addr_t addr, shannon_size_t size, int dir);
+extern shannon_dma_addr_t shannon_dma_map_page(shannon_pci_dev_t *pdev, void *ptr, shannon_size_t offset, shannon_size_t size, int dir);
+extern void shannon_dma_unmap_page(shannon_pci_dev_t *pdev, shannon_dma_addr_t addr, shannon_size_t size, int dir);
 extern int shannon_dma_mapping_error(shannon_pci_dev_t *pdev, shannon_dma_addr_t dma_addr);
 
 extern int shannon_dma_set_mask(shannon_pci_dev_t *pdev, u64 mask);
 extern int shannon_dma_set_coherent_mask(shannon_pci_dev_t *pdev, u64 mask);
 extern void * shannon_dma_alloc_coherent(shannon_pci_dev_t *pdev, shannon_size_t size, shannon_dma_addr_t *dma_handle, gfp_t gfp);
 extern void shannon_dma_free_coherent(shannon_pci_dev_t *pdev, shannon_size_t size, void *vaddr, shannon_dma_addr_t bus);
-extern shannon_dma_addr_t shannon_dma_map_page(shannon_pci_dev_t *pdev, void *ptr, shannon_size_t offset, shannon_size_t size, int dir);
-extern void shannon_dma_unmap_page(shannon_pci_dev_t *pdev, shannon_dma_addr_t addr, shannon_size_t size, int dir);
 
 
 #endif	/* #if defined(CONFIG_SHANNON_EMU) || defined(CONFIG_SHANNON_EMU_MODULE) */

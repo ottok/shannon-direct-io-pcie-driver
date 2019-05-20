@@ -16,6 +16,8 @@
 #include <linux/errno.h>
 #include <linux/ioctl.h>
 #include <linux/highmem.h>
+#include <linux/topology.h>
+#include "shannon_list.h"
 
 #define RESERVE_MEM(bytes) char mem[bytes] __attribute__ ((aligned(8)))
 
@@ -148,14 +150,17 @@ typedef struct __shannon_atomic shannon_atomic64_t;
 
 extern void shannon_atomic_set(shannon_atomic_t *v, int i);
 extern void shannon_atomic_add(int i, shannon_atomic_t *v);
+extern int shannon_atomic_add_return(int i, shannon_atomic_t *v);
 extern void shannon_atomic_sub(int i, shannon_atomic_t *v);
+extern int shannon_atomic_sub_return(int i, shannon_atomic_t *v);
 extern void shannon_atomic_dec(shannon_atomic_t *v);
 extern void shannon_atomic_inc(shannon_atomic_t *v);
 extern int shannon_atomic_read(const shannon_atomic_t *v);
 extern int shannon_atomic_dec_and_test(shannon_atomic_t *v);
 extern int shannon_atomic_inc_and_test(shannon_atomic_t *v);
-extern long int shannon_atomic64_inc_return(shannon_atomic64_t *v);
 extern int shannon_atomic_dec_return(shannon_atomic_t *v);
+extern int shannon_atomic_inc_return(shannon_atomic_t *v);
+extern long int shannon_atomic64_inc_return(shannon_atomic64_t *v);
 
 
 extern void shannon_atomic64_set(shannon_atomic64_t *v, long int i);
@@ -252,15 +257,24 @@ extern long shannon_copy_to_user(void __user *to, const void *from, unsigned lon
 extern void shannon_free_page(unsigned long addr);
 extern unsigned long __shannon_get_free_page(shannon_gfp_t gfp);
 
+// topology.h
+extern int shannon_numa_node_id(void);
+
+// nodemask.h
+#define shannon_for_each_online_node(node) for_each_online_node(node)
+extern int shannon_num_online_nodes(void);
+
 //  mm.h
 typedef void shannon_page;
 extern void *shannon_page_address(shannon_page *page);
 extern void *shannon_virt_to_page(const void *addr);
+extern int shannon_page_to_nid(shannon_page *page);
 
 //  vmalloc.h
 extern void *shannon_vzalloc(unsigned long size);
 extern void *shannon_vmalloc(unsigned long size);
 extern void shannon_vfree(void *addr);
+extern void *shannon_vmalloc_to_page(void *vmalloc_addr);
 
 //  slab.h
 typedef void shannon_kmem_cache_t;
@@ -277,11 +291,14 @@ extern void shannon_kfree(const void *);
 typedef void shannon_mempool_t;
 
 extern shannon_mempool_t *shannon_mempool_create_kmalloc_pool(int min_nr, size_t size);
+extern shannon_mempool_t *shannon_mempool_create_kmalloc_pool_node(int min_nr, size_t size, int nid);
 extern shannon_mempool_t *shannon_mempool_create_slab_pool(int min_nr, shannon_kmem_cache_t *kc);
+extern shannon_mempool_t *shannon_mempool_create_slab_pool_node(int min_nr, shannon_kmem_cache_t *kc, int nid);
 extern void shannon_mempool_destroy(shannon_mempool_t *pool);
 extern void *shannon_mempool_alloc(shannon_mempool_t *pool, shannon_gfp_t gfp_mask);
 extern void shannon_mempool_free(void *element, shannon_mempool_t *pool);
 extern int get_mempool_count(shannon_mempool_t *pool);
+
 //  @END of memory related functionalities wrapper
 
 //  @BEGIN of miscellaneous kernel functionalities wrapper

@@ -10,6 +10,9 @@
 #include <linux/wait.h>
 #include <linux/hash.h>
 #include <linux/version.h>
+#ifdef CONFIG_SUSE_PRODUCT_CODE
+#include <linux/suse_version.h>
+#endif
 
 #include "shannon_waitqueue.h"
 
@@ -126,7 +129,15 @@ void shannon_finish_wait(shannon_wait_queue_head_t *q, shannon_wait_queue_t *wai
 int shannon_autoremove_wake_function(shannon_wait_queue_t *wait, unsigned mode, int sync, void *key)
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+#ifdef SUSE_PRODUCT_CODE
+#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
 	int ret = default_wake_function((wait_queue_t *)wait, mode, sync, key);
+#else
+	int ret = default_wake_function((wait_queue_entry_t *)wait, mode, sync, key);
+#endif
+#else
+	int ret = default_wake_function((wait_queue_t *)wait, mode, sync, key);
+#endif
 #else
 	int ret = default_wake_function((wait_queue_entry_t *)wait, mode, sync, key);
 #endif
@@ -135,5 +146,3 @@ int shannon_autoremove_wake_function(shannon_wait_queue_t *wait, unsigned mode, 
 		shannon_list_del_init(&wait->task_list);
 	return ret;
 }
-
-

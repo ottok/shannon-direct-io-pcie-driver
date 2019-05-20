@@ -8,6 +8,9 @@
 #include <linux/version.h>
 #include <linux/pci.h>
 #include <linux/spinlock.h>
+#ifdef CONFIG_SUSE_PRODUCT_CODE
+#include <linux/suse_version.h>
+#endif
 
 #include "shannon_block.h"
 #include "shannon_device.h"
@@ -225,8 +228,18 @@ static void shannon_bio_endio(shannon_bio_t *bio, int error)
 	bio_endio((struct bio *)bio, error);
 
 #elif LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
+#ifdef SUSE_PRODUCT_CODE
+#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
 	((struct bio *)bio)->bi_error = error;
 	bio_endio((struct bio *)bio);
+#else
+	((struct bio *)bio)->bi_status = error;
+	bio_endio((struct bio *)bio);
+#endif
+#else
+	((struct bio *)bio)->bi_error = error;
+	bio_endio((struct bio *)bio);
+#endif
 #else
 	((struct bio *)bio)->bi_status = error;
 	bio_endio((struct bio *)bio);
@@ -749,9 +762,11 @@ int shannon_make_request(shannon_request_queue_t *q, shannon_bio_t *bio)
 	if (ret)
 		goto free_sbio;
 
-	if (unlikely(check_and_alloc_lpmt(get_shannon_disk_from_sdev(sdev), sbio, logicb_shift))) {
-		ret = -EIO;
-		goto free_sg_list;
+	if (sbio->dma_dir == SHANNON_DMA_TODEVICE) {
+		if (unlikely(check_and_alloc_lpmt(get_shannon_disk_from_sdev(sdev), sbio, logicb_shift))) {
+			ret = -EIO;
+			goto free_sg_list;
+		}
 	}
 
 	// skipped request queue and io scheduler, must do disk statistics manually.
@@ -834,10 +849,11 @@ int shannon_make_request_ns(shannon_request_queue_t *q, shannon_bio_t *bio)
 	ret = shannon_convert_bio(sbio, bio, logicb_size);
 	if (ret)
 		goto free_sbio;
-
-	if (unlikely(check_and_alloc_lpmt(get_shannon_disk_from_ns(ns), sbio, logicb_shift))) {
-		ret = -EIO;
-		goto free_sg_list;
+	if (sbio->dma_dir == SHANNON_DMA_TODEVICE) {
+		if (unlikely(check_and_alloc_lpmt(get_shannon_disk_from_ns(ns), sbio, logicb_shift))) {
+			ret = -EIO;
+			goto free_sg_list;
+		}
 	}
 
 	if ((shannon_bio_data_dir(bio) == LINUX_BIO_WRITE)

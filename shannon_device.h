@@ -20,8 +20,9 @@ extern struct file_operations shannon_ctrl_cdev_fops;
 extern struct file_operations debug_cdev_fops;
 
 struct debug_cdev {
-#define SCATTER_MEMBLOCK_TYPE	(0x11)
-#define NORMAL_TYPE				(0x22)
+#define MAPTABLE_MEMBLOCK_TYPE	(0x11)
+#define TEMPTABLE_MEMBLOCK_TYPE	(0x22)
+#define NORMAL_TYPE				(0x33)
 	char type;
 	int minor;
 	char *buf;

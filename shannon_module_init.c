@@ -24,6 +24,9 @@
 
 #include <linux/cpu.h>
 #include <asm/processor.h>
+#ifdef CONFIG_SUSE_PRODUCT_CODE
+#include <linux/suse_version.h>
+#endif
 
 #include "shannon_port.h"
 
@@ -34,9 +37,7 @@ module_param(shannon_scsi_mode, int, S_IRUGO|S_IWUSR);
 
 struct shannon_dev;
 struct shannon_memblock_pool;
-extern struct shannon_memblock_pool map_table_pool;
-extern struct shannon_memblock_pool temp_table_pool;
-extern int shannon_memblock_pool_init(struct shannon_memblock_pool *mpool, u32 memblock_size, u32 entry_size);
+extern int shannon_memblock_pool_init(struct shannon_memblock_pool *mpool, u32 memblock_size);
 extern void shannon_memblock_pool_destroy(struct shannon_memblock_pool *mpool);
 extern u64 get_shannon_dev_sectors(struct shannon_dev *dev);
 extern u64 get_shannon_ns_sectors(struct shannon_namespace *ns);
@@ -388,8 +389,8 @@ extern int shannon_scsi_probe(struct pci_dev *pdev, const struct pci_device_id *
 extern void shannon_scsi_remove(struct pci_dev *pdev);
 extern void shannon_remove(void *data, shannon_pci_dev_t *pdev);
 extern int shannon_probe(shannon_pci_dev_t *pdev, const shannon_pci_device_id_t *id, struct shannon_scsi_private *data);
-extern void shannon_pci_reset_prepare(shannon_pci_dev_t *pdev);
-extern void shannon_pci_reset_finished(shannon_pci_dev_t *pdev);
+extern void __shannon_pci_reset_prepare(struct pci_dev *pdev);
+extern void __shannon_pci_reset_finished(struct pci_dev *pdev);
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 8, 0)
 static void shannon_remove_wrapper(struct pci_dev *pdev)
@@ -415,15 +416,60 @@ static int __devinit shannon_probe_wrapper(struct pci_dev *pdev, const struct pc
 		return shannon_probe(pdev, id, NULL);
 }
 
+void shannon_pci_reset_prepare(struct pci_dev *pdev)
+{
+	__shannon_pci_reset_prepare(pdev);
+}
+
+void shannon_pci_reset_finished(struct pci_dev *pdev)
+{
+	__shannon_pci_reset_finished(pdev);
+}
+
 void shannon_pci_reset_notify(struct pci_dev *pdev, bool prepare)
 {
 	if (prepare)
-		shannon_pci_reset_prepare((shannon_pci_dev_t *)pdev);
+		shannon_pci_reset_prepare(pdev);
 	else
-		shannon_pci_reset_finished((shannon_pci_dev_t *)pdev);
+		shannon_pci_reset_finished(pdev);
 }
 
-struct pci_error_handlers shannon_pci_error_handlers = {NULL};
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0)
+	#ifdef SUSE_PRODUCT_CODE
+		#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
+			struct pci_error_handlers shannon_pci_error_handlers = {
+				.reset_notify = shannon_pci_reset_notify,
+			};
+		#else	// SUSE_PRODUCT_CODE >= SUSE_PRODUCT(1, 15, 0, 0)
+			struct pci_error_handlers shannon_pci_error_handlers = {
+				.reset_prepare = shannon_pci_reset_prepare,
+				.reset_done = shannon_pci_reset_finished,
+			};
+		#endif	// end of SUSE_PRODUCT_CODE >= SUSE_PRODUCT(1, 15, 0, 0)
+	#else	// (ifndef SUSE_PRODUCT_CODE) && (LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0))
+		#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 13, 0)
+			struct pci_error_handlers shannon_pci_error_handlers = {
+				.reset_prepare = shannon_pci_reset_prepare,
+				.reset_done = shannon_pci_reset_finished,
+			};
+		#else
+			struct pci_error_handlers shannon_pci_error_handlers = {
+				.reset_notify = shannon_pci_reset_notify,
+			};
+		#endif
+	#endif
+#else
+	#ifdef RHEL_RELEASE_CODE
+		#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 2)
+			struct pci_driver_rh shannon_pci_driver_rh = {
+				.size = sizeof(struct pci_driver_rh),
+				.reset_notify = shannon_pci_reset_notify,
+			};
+		#endif
+	#endif
+	struct pci_error_handlers shannon_pci_error_handlers = {NULL};
+#endif
 
 static struct pci_driver shannon_driver = {
 	.name           = "shannon",
@@ -437,17 +483,11 @@ static struct pci_driver shannon_driver = {
 	.shutdown       = shannon_remove_wrapper,
 	.err_handler = &shannon_pci_error_handlers,
 #ifdef RHEL_RELEASE_CODE
-#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 0)
+#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 2)
 	.pci_driver_rh	= &shannon_pci_driver_rh,
 #endif
 #endif
 };
-
-extern shannon_kmem_cache_t *shannon_req_slab;
-extern shannon_kmem_cache_t *shannon_bio_slab;
-extern shannon_mempool_t *shannon_req_pool;
-extern shannon_mempool_t *shannon_bio_pool;
-
 
 extern struct shannon_list_head shannon_pool_list;
 extern shannon_mutex_t pool_sem;
@@ -476,8 +516,6 @@ extern int shannon_never_hang;
 module_param(shannon_never_hang, int, S_IRUGO|S_IWUSR);
 extern int shannon_high_performance;
 module_param(shannon_high_performance, int, S_IRUGO|S_IWUSR);
-extern int shannon_fill_lines;
-module_param(shannon_fill_lines, int, S_IRUGO|S_IWUSR);
 int shannon_use_percpu_wq;
 module_param(shannon_use_percpu_wq, int, S_IRUGO|S_IWUSR);
 extern int shannon_init_temp;
@@ -492,6 +530,20 @@ extern int shannon_force_reclaim_activeblock;
 module_param(shannon_force_reclaim_activeblock, int, S_IRUGO|S_IWUSR);
 extern int shannon_load_readonly;
 module_param(shannon_load_readonly, int, S_IRUGO|S_IWUSR);
+extern int shannon_fast_boot_enable;
+module_param(shannon_fast_boot_enable, int, S_IRUGO|S_IWUSR);
+extern int shannon_skip_first_read;
+module_param(shannon_skip_first_read, int, S_IRUGO|S_IWUSR);
+extern int shannon_prefetch_enable;
+module_param(shannon_prefetch_enable, int, S_IRUGO|S_IWUSR);
+extern int shannon_high_prio_gc_thread;
+module_param(shannon_high_prio_gc_thread, int, S_IRUGO|S_IWUSR);
+extern int shannon_background_trim;
+module_param(shannon_background_trim, int, S_IRUGO|S_IWUSR);
+extern int shannon_prealloc;
+module_param(shannon_prealloc, int, S_IRUGO|S_IWUSR);
+extern int shannon_skip_epilog;
+module_param(shannon_skip_epilog, int, S_IRUGO|S_IWUSR);
 
 extern int shannon_use_rt_comp_thread;
 module_param(shannon_use_rt_comp_thread, int, 0);
@@ -538,8 +590,6 @@ int check_has_dma_delay(void)
 static int __init shannon_init(void)
 {
 	int result = -ENOMEM;
-	map_table_pool.memblock_wq = NULL;
-	temp_table_pool.memblock_wq = NULL;
 
 	if (shannon_scsi_mode) {
 		shannon_use_percpu_wq = 1;
@@ -562,10 +612,6 @@ static int __init shannon_init(void)
 		}
 	}
 
-	if (shannon_memblock_pool_init(&map_table_pool, MAP_TABLE_MEMBLOCK_SIZE_SHIFT, MAP_TABLE_ENTRY_SIZE))
-		goto destroy_wq;
-	if (shannon_memblock_pool_init(&temp_table_pool, TEMP_TABLE_MEMBLOCK_SIZE_SHIFT, TEMP_TABLE_ENTRY_SIZE))
-		goto destroy_wq;
 	if (shannon_alloc_mempool())
 		goto destroy_wq;
 
@@ -580,10 +626,6 @@ free_mempool:
 destroy_wq:
 	if (shannon_percpu_wq)
 		shannon_destroy_workqueue(shannon_percpu_wq);
-	if (map_table_pool.memblock_wq)
-		shannon_destroy_workqueue(map_table_pool.memblock_wq);
-	if (temp_table_pool.memblock_wq)
-		shannon_destroy_workqueue(temp_table_pool.memblock_wq);
 unregister_blkdev:
 	unregister_blkdev(shannon_major, "shannon");
 	return result;
@@ -592,8 +634,6 @@ unregister_blkdev:
 static void __exit shannon_exit(void)
 {
 	pci_unregister_driver(&shannon_driver);
-	shannon_memblock_pool_destroy(&map_table_pool);
-	shannon_memblock_pool_destroy(&temp_table_pool);
 	shannon_free_mempool();
 
 	if (shannon_percpu_wq)
@@ -602,6 +642,6 @@ static void __exit shannon_exit(void)
 }
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("3.2.2.3");
+MODULE_VERSION("3.3.0");
 module_init(shannon_init);
 module_exit(shannon_exit);

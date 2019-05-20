@@ -216,8 +216,8 @@ define_one_rw(wl_max_erase_count);
 define_one_rw(wl_erase_count_delta_0);
 define_one_rw(wl_erase_count_delta_1);
 define_one_rw(fill_chunk_timer_expire);
-define_one_rw(period_read_period);
-define_one_rw(period_read_ppa);
+define_one_rw(first_read_period);
+define_one_rw(first_read_ppa);
 define_one_rw(switch_microcode);
 define_one_ro(service_tag);
 define_one_ro(fpga_dna);
@@ -226,6 +226,7 @@ define_one_ro(refresh_mbr_count);
 define_one_ro(atomic_write);
 define_one_ro(prioritize_write);
 define_one_ro(nonaligned_bios);
+define_one_rw(latency_threshold);
 define_one_rw(print_latency_interval);
 define_one_rw(hard_queue_limit);
 define_one_rw(cmd_queue_writes_limit);
@@ -252,6 +253,9 @@ define_one_rw(dynamic_irq_delay);
 define_one_rw(irq_delay_factor);
 define_one_rw(min_irq_delay);
 define_one_rw(max_irq_delay);
+define_one_rw(discard_large_unit_threshold);
+define_one_rw(in_write_chunk_factor);
+define_one_rw(buffer_write_policy);
 
 #ifdef CONFIG_HWMON
 define_one_device_ro(name);
@@ -369,8 +373,8 @@ static struct attribute *shannon_default_attrs[] = {
 	&wl_erase_count_delta_0.attr,
 	&wl_erase_count_delta_1.attr,
 	&fill_chunk_timer_expire.attr,
-	&period_read_period.attr,
-	&period_read_ppa.attr,
+	&first_read_period.attr,
+	&first_read_ppa.attr,
 	&switch_microcode.attr,
 	&service_tag.attr,
 	&fpga_dna.attr,
@@ -379,6 +383,7 @@ static struct attribute *shannon_default_attrs[] = {
 	&atomic_write.attr,
 	&prioritize_write.attr,
 	&nonaligned_bios.attr,
+	&latency_threshold.attr,
 	&print_latency_interval.attr,
 	&hard_queue_limit.attr,
 	&cmd_queue_writes_limit.attr,
@@ -395,6 +400,7 @@ static struct attribute *shannon_default_attrs[] = {
 	&min_irq_delay.attr,
 	&max_irq_delay.attr,
 	&fast_read.attr,
+	&discard_large_unit_threshold.attr,
 	&drop_cache.attr,
 	&prefetch_seqread_threshold.attr,
 	&prefetch_poll_times_threshold.attr,
@@ -404,6 +410,8 @@ static struct attribute *shannon_default_attrs[] = {
 	&prefetch_distance_factor.attr,
 	&prefetch_enable.attr,
 	&prefetch_traffic_factor.attr,
+	&in_write_chunk_factor.attr,
+	&buffer_write_policy.attr,
 	NULL,
 };
 
@@ -678,8 +686,10 @@ define_one_ro_ns(pending_bios);
 define_one_ro_ns(nonaligned_bios);
 define_one_ro_ns(seq_num);
 define_one_ro_ns(rmw_list);
+define_one_rw_ns(latency_threshold);
 define_one_rw_ns(print_latency_interval);
 define_one_ro_ns(user_defined_name);
+define_one_rw_ns(discard_large_unit_threshold);
 
 static struct attribute *shannon_default_attrs_ns[] = {
 	&host_write_sectors_ns.attr,
@@ -689,8 +699,10 @@ static struct attribute *shannon_default_attrs_ns[] = {
 	&nonaligned_bios_ns.attr,
 	&seq_num_ns.attr,
 	&rmw_list_ns.attr,
+	&latency_threshold_ns.attr,
 	&print_latency_interval_ns.attr,
 	&user_defined_name_ns.attr,
+	&discard_large_unit_threshold_ns.attr,
 	NULL,
 };
 
@@ -817,12 +829,14 @@ define_one_ro_pool(used_space_percentage);
 define_one_ro_pool(physical_capacity);
 define_one_rw_pool(overprovision);
 define_one_rw_pool(hard_queue_limit);
+define_one_rw_pool(read_cmd_limit);
 
 static struct attribute *shannon_default_attrs_pool[] = {
 	&used_space_percentage_pool.attr,
 	&physical_capacity_pool.attr,
 	&overprovision_pool.attr,
 	&hard_queue_limit_pool.attr,
+	&read_cmd_limit_pool.attr,
 	NULL,
 };
 

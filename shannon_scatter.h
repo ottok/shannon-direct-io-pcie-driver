@@ -16,7 +16,9 @@ extern void shannon_sg_mark_end(shannon_sg_list_t *sg);
 
 
 extern shannon_sg_list_t *shannon_sg_alloc(unsigned int nents, shannon_gfp_t gfp_mask);
+extern shannon_sg_list_t *shannon_sg_vzalloc(unsigned int nents);
 extern void shannon_sg_free(shannon_sg_list_t *sgl, unsigned int nents);
+extern void shannon_sg_vfree(shannon_sg_list_t *sgl, unsigned int nents);
 extern void shannon_sg_init_table(shannon_sg_list_t *sgl, unsigned int nents);
 
 extern shannon_sg_list_t *shannon_sg_next(shannon_sg_list_t *sg);

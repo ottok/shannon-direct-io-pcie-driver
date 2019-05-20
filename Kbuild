@@ -2,10 +2,12 @@
 
 SHANNON_DRIVER_NAME ?= shannon
 SHANNON_EMU_NAME ?= shannon_nand_emu
+EXTRA_CFLAGS += -DSHANNON_RELEASE
 
 $(SHANNON_DRIVER_NAME)-y := shannon_main.o
 $(SHANNON_DRIVER_NAME)-y += shannon_ftl.o
 $(SHANNON_DRIVER_NAME)-y += shannon_prefetch.o
+$(SHANNON_DRIVER_NAME)-y += shannon_boot.o
 $(SHANNON_DRIVER_NAME)-y += shannon_epilog.o
 $(SHANNON_DRIVER_NAME)-y += shannon_err_handler.o
 $(SHANNON_DRIVER_NAME)-y += shannon_ns.o

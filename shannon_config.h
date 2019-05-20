@@ -81,4 +81,10 @@
 //#define CONFIG_SHANNON_GC_GREEDY
 #define CONFIG_SHANNON_GC_BALANCE
 
+/*
+ * Fast boot data verify
+ * Default:off
+ */
+//#define CONFIG_SHANNON_FAST_BOOT_VERIFY
+
 #endif /* __SHANNON_CONFIG_H */

@@ -54,6 +54,7 @@ extern void __shannon_set_current_state(long state);
 extern void shannon_cond_resched(void);
 extern int set_thread_rt(void);
 extern int set_thread_normal(void);
+extern int set_thread_highest_prio_normal(void);
 extern int shannon_set_node_cpus_allowed(shannon_task_struct_t *k, int node);
 
 //  kthread.h

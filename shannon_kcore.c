@@ -230,6 +230,11 @@ void shannon_atomic_add(int i, shannon_atomic_t *v)
 	atomic_add(i, (atomic_t *)v);
 }
 
+int shannon_atomic_add_return(int i, shannon_atomic_t *v)
+{
+	return atomic_add_return(i, (atomic_t *)v);
+}
+
 void shannon_atomic64_add(long int i, shannon_atomic64_t *v)
 {
 	atomic64_add(i, (atomic64_t *)v);
@@ -238,6 +243,11 @@ void shannon_atomic64_add(long int i, shannon_atomic64_t *v)
 void shannon_atomic_sub(int i, shannon_atomic_t *v)
 {
 	atomic_sub(i, (atomic_t *)v);
+}
+
+int shannon_atomic_sub_return(int i, shannon_atomic_t *v)
+{
+	return atomic_sub_return(i, (atomic_t *)v);
 }
 
 void shannon_atomic64_sub(long int i, shannon_atomic64_t *v)
@@ -293,6 +303,11 @@ long int shannon_atomic64_dec_and_test(shannon_atomic64_t *v)
 int shannon_atomic_inc_and_test(shannon_atomic_t *v)
 {
 	return atomic_inc_and_test((atomic_t*)v);
+}
+
+int shannon_atomic_inc_return(shannon_atomic_t *v)
+{
+	return atomic_inc_return((atomic_t *)v);
 }
 
 long int shannon_atomic64_inc_return(shannon_atomic64_t *v)
@@ -594,10 +609,32 @@ unsigned long __shannon_get_free_page(gfp_t gfp)
 	return __get_free_page(gfp);
 }
 
+// topology.h
+int shannon_numa_node_id(void)
+{
+	return numa_node_id();
+}
+
+// nodemask.h
+int shannon_num_online_nodes(void)
+{
+	return num_online_nodes();
+}
+
 //  mm.h
 void *shannon_page_address(shannon_page *page)
 {
 	return page_address((struct page *)page);
+}
+
+void *shannon_virt_to_page(const void *addr)
+{
+	return virt_to_page(addr);
+}
+
+int shannon_page_to_nid(shannon_page *page)
+{
+	return page_to_nid((struct page *)page);
 }
 
 //  vmalloc.h
@@ -629,9 +666,9 @@ void shannon_vfree(void *addr)
 	vfree(addr);
 }
 
-void *shannon_virt_to_page(const void *addr)
+void *shannon_vmalloc_to_page(void *vmalloc_addr)
 {
-	return virt_to_page(addr);
+	return vmalloc_to_page(vmalloc_addr);
 }
 
 //  slab.h
@@ -675,9 +712,27 @@ shannon_mempool_t *shannon_mempool_create_kmalloc_pool(int min_nr, size_t size)
 	return mempool_create_kmalloc_pool(min_nr, size);
 }
 
+shannon_mempool_t *shannon_mempool_create_kmalloc_pool_node(int min_nr, size_t size, int nid)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+	return mempool_create_node(min_nr, mempool_kmalloc, mempool_kfree, (void *)size, GFP_KERNEL, nid);
+#else
+	return mempool_create_node(min_nr, mempool_kmalloc, mempool_kfree, (void *)size, nid);
+#endif
+}
+
 shannon_mempool_t *shannon_mempool_create_slab_pool(int min_nr, shannon_kmem_cache_t *kc)
 {
 	return mempool_create_slab_pool(min_nr, (struct kmem_cache *)kc);
+}
+
+shannon_mempool_t *shannon_mempool_create_slab_pool_node(int min_nr, shannon_kmem_cache_t *kc, int nid)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 5, 0)
+	return mempool_create_node(min_nr, mempool_alloc_slab, mempool_free_slab, (void *)kc, GFP_KERNEL, nid);
+#else
+	return mempool_create_node(min_nr, mempool_alloc_slab, mempool_free_slab, (void *)kc, nid);
+#endif
 }
 
 void shannon_mempool_destroy(shannon_mempool_t *pool)
@@ -685,7 +740,7 @@ void shannon_mempool_destroy(shannon_mempool_t *pool)
 	mempool_destroy((mempool_t *)pool);
 }
 
-void * shannon_mempool_alloc(shannon_mempool_t *pool, shannon_gfp_t gfp_mask)
+void *shannon_mempool_alloc(shannon_mempool_t *pool, shannon_gfp_t gfp_mask)
 {
 	return mempool_alloc((mempool_t *)pool, gfp_mask);
 }

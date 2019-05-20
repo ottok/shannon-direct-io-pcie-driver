@@ -8,6 +8,9 @@
 #include <linux/jiffies.h>
 #include <linux/module.h>
 #include <linux/version.h>
+#ifdef CONFIG_SUSE_PRODUCT_CODE
+#include <linux/suse_version.h>
+#endif
 
 #include "shannon_device.h"
 #include "shannon_dma.h"
@@ -171,7 +174,15 @@ int shannon_disk_in_flight(shannon_gendisk_t *gdt)
 	return part_in_flight(&gd->part0);
 #endif
 #else
+#ifdef SUSE_PRODUCT_CODE
+#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
 	return part_in_flight(&gd->part0);
+#else
+	return atomic_read(&gd->part0.in_flight[0]) + atomic_read(&gd->part0.in_flight[1]);
+#endif
+#else
+	return part_in_flight(&gd->part0);
+#endif
 #endif
 
 #else
@@ -201,7 +212,15 @@ void shannon_start_io_acct(shannon_gendisk_t *gdt, shannon_bio_t *p)
 	part_round_stats(cpu, part);
 #endif
 #else
+#ifdef SUSE_PRODUCT_CODE
+#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
 	part_round_stats(cpu, part);
+#else
+	part_round_stats(gd->queue, cpu, part);
+#endif
+#else
+	part_round_stats(cpu, part);
+#endif
 #endif
 
 #else
@@ -247,7 +266,15 @@ void shannon_end_io_acct(shannon_gendisk_t *gdt, shannon_bio_t *p, unsigned long
 	part_round_stats(cpu, part);
 #endif
 #else
+#ifdef SUSE_PRODUCT_CODE
+#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
 	part_round_stats(cpu, part);
+#else
+	part_round_stats(gd->queue, cpu, part);
+#endif
+#else
+	part_round_stats(cpu, part);
+#endif
 #endif
 
 #else

@@ -24,6 +24,7 @@ struct shannon_cache_slot {
 #define SLOT_WAIT_DATA_BIT			(1)
 #define SLOT_HANDLE_REQ_LIST_BIT	(2)
 	unsigned long state;
+	u64 host_read_sectors;
 	shannon_spinlock_t list_lock;
 	struct shannon_list_head req_list;
 	struct shannon_cache_line *cache_line;
