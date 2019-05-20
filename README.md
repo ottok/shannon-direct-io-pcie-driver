@@ -30,3 +30,6 @@ exit
 
 # Ensure any files written by Docker are again user owned
 sudo chown -R $USER ../
+
+
+@TODO: re-write packaging along https://sources.debian.org/src/sysdig/0.24.1-3/debian/control/
