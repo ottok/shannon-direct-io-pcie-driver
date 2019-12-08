@@ -56,6 +56,7 @@ struct shannon_bio {
 	int has_hole;
 	logicb_t logicbs;
 	int segments;
+	int is_valloc; /* Indicates if this sgl is valloced. */
 
 	u16 ns_id;
 	u16 ns_seq_num;
@@ -84,6 +85,9 @@ struct shannon_bio {
 
 	int overlap;
 	int need_bounce;
+#ifdef CONFIG_SHANNON_ATOMIC_WRITE_VERIFY
+	char atomic_write_comm[32];
+#endif
 
 	/* for scsi */
 	struct shannon_scsi_private *hostdata;

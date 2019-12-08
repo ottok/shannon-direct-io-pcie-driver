@@ -307,6 +307,7 @@ extern void *shannon_memset(void *s, int c, size_t n);
 extern void *shannon_memcpy(void *dest, const void *src, size_t count);
 extern int shannon_memcmp(const void *cs, const void *ct, size_t count);
 extern size_t shannon_strnlen(const char *s, size_t count);
+extern char *shannon_strncpy(char *dest, const char *src, size_t count);
 
 //  printk.h
 #ifndef KERN_ERR /* Make sure no redefinition errors */
@@ -382,6 +383,7 @@ extern long SHANNON_IS_ERR_OR_NULL(const void *ptr);
 
 //string.h
 extern size_t shannon_strlen(const char *s);
+extern int shannon_strcmp(const char *cs, const char *ct);
 
 //random.h
 extern void shannon_get_random_bytes(void *buf, int bytes);

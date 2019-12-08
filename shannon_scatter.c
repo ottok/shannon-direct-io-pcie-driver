@@ -50,7 +50,7 @@ shannon_sg_list_t *shannon_sg_vzalloc(unsigned int nents)
 {
 	u64 size = sizeof(struct scatterlist) * nents;
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(2, 6, 36)
 	return vzalloc(size);
 #else
 	void *addr = vmalloc(size);

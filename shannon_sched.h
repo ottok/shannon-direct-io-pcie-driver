@@ -29,6 +29,7 @@ struct shannon_tasklet_struct {
 	RESERVE_MEM(56);
 };
 
+typedef void shannon_cpumask_struct_t;
 typedef void shannon_task_struct_t;
 
 extern void *shannon_current(void);
@@ -61,5 +62,8 @@ extern int shannon_set_node_cpus_allowed(shannon_task_struct_t *k, int node);
 extern shannon_task_struct_t * shannon_kthread_run(int (*threadfn)(void *data), void *data, const char *namefmt, ...);
 extern int shannon_kthread_stop(shannon_task_struct_t *k);
 extern int shannon_kthread_should_stop(void);
+extern bool shannon_not_set_cpumask(shannon_cpumask_struct_t *scpumask);
+extern shannon_cpumask_struct_t *shannon_get_current_cpus_allowed(void);
+extern const char *shannon_get_current_comm(void);
 
 #endif /* __SHANNON_SCHED_H */

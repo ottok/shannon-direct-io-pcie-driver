@@ -28,7 +28,7 @@ curdir := $(subst $(space),\$(space),$(CURDIR))
 shannon_oem_name := shannon
 shannon_source_name := shannon-module
 shannon_driver_name := shannon-module
-shannon_version := 3.3.0
+shannon_version := 3.4.0rc2
 
 deb_kernel_version ?= $(shell uname -r)
 deb_nice_kernel_version := $(subst -,_,$(deb_kernel_version))

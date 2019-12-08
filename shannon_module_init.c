@@ -493,6 +493,10 @@ extern struct shannon_list_head shannon_pool_list;
 extern shannon_mutex_t pool_sem;
 extern int shannon_major;
 extern int shannon_auto_attach;
+extern int shannon_sbio_threshold;
+module_param(shannon_sbio_threshold, int, S_IRUGO|S_IWUSR);
+extern int shannon_fio_cpumask_set_enable;
+module_param(shannon_fio_cpumask_set_enable, int, S_IRUGO | S_IWUSR);
 
 extern int shannon_sector_size;
 module_param(shannon_sector_size, int, S_IRUGO|S_IWUSR);
@@ -555,6 +559,8 @@ extern int shannon_overlap_write;
 module_param(shannon_overlap_write, int, S_IRUGO|S_IWUSR);
 extern int shannon_dynamic_irq_delay;
 module_param(shannon_dynamic_irq_delay, int, S_IRUGO|S_IWUSR);
+extern int shannon_max_wl_factor;
+module_param(shannon_max_wl_factor, int, S_IRUGO|S_IWUSR);
 
 extern int shannon_alloc_mempool(void);
 extern void shannon_free_mempool(void);
@@ -642,6 +648,6 @@ static void __exit shannon_exit(void)
 }
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("3.3.0");
+MODULE_VERSION("3.4.0");
 module_init(shannon_init);
 module_exit(shannon_exit);

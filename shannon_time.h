@@ -34,6 +34,7 @@ extern void shannon_udelay(unsigned long usecs);
 
 extern unsigned long get_jiffies(void);
 extern void shannon_do_gettimeofday(struct shannon_timeval *tv);
+extern void shannon_getnstimeofday(struct shannon_timeval *tv);
 
 //  jiffies.h
 extern unsigned int shannon_jiffies_to_msecs(const unsigned long j);

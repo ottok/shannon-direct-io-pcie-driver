@@ -83,7 +83,7 @@ struct shannon_prefetch {
 #define PREFETCH_HARD_BIO_SIZE_THRESHOLD	(PREFETCH_LBA_PER_CACHE_LINE * 4096 * 2)	// 2 cache lines size
 	int soft_bio_size_threshold;
 	int hard_bio_size_threshold;
-#define PREFETCH_LARGE_BLOCK_IO_THRESHOLD	(4)
+#define PREFETCH_LARGE_BLOCK_IO_THRESHOLD	(32)
 	int large_block_io_threshold;
 	shannon_spinlock_t list_lock;
 	struct shannon_list_head req_list;

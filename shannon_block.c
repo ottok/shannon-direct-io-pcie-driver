@@ -20,6 +20,7 @@
 extern void increase_ns_pending_bios(struct shannon_namespace *ns);
 extern void decrease_ns_pending_bios(struct shannon_namespace *ns);
 extern int check_and_alloc_lpmt(struct shannon_disk *sdisk, struct shannon_bio *sbio, unsigned int logicb_shift);
+extern int shannon_fio_cpumask_set_enable;
 
 int shannon_use_iosched = 0;
 
@@ -477,8 +478,12 @@ int shannon_convert_bio(struct shannon_bio *sbio, shannon_bio_t *lbio, unsigned 
 
 	sbio->sg = shannon_sg_alloc(sbio->sg_count, GFP_SHANNON);
 	if (sbio->sg == NULL) {
-		shannon_err("alloc sg failed.\n");
-		return -ENOMEM;
+		sbio->sg = shannon_sg_vzalloc(sbio->sg_count);
+		if (sbio->sg == NULL) {
+			shannon_err("alloc sg failed.\n");
+			return -ENOMEM;
+		}
+		sbio->is_valloc = 1;
 	}
 	shannon_sg_init_table(sbio->sg, sbio->sg_count);
 
@@ -585,8 +590,12 @@ int shannon_convert_bio(struct shannon_bio *sbio, shannon_bio_t *lbio, unsigned 
 
 	sbio->sg = shannon_sg_alloc(sbio->sg_count, GFP_SHANNON);
 	if (sbio->sg == NULL) {
-		shannon_err("alloc sg failed.\n");
-		return -ENOMEM;
+		sbio->sg = shannon_sg_vzalloc(sbio->sg_count);
+		if (sbio->sg == NULL) {
+			shannon_err("alloc sg failed.\n");
+			return -ENOMEM;
+		}
+		sbio->is_valloc = 1;
 	}
 	shannon_sg_init_table(sbio->sg, sbio->sg_count);
 
@@ -685,8 +694,12 @@ void submit_sbio_task(struct shannon_work_struct *work)
 	ret = shannon_submit_bio(sdev, sbio);
 	if (ret) {
 		shannon_end_io_acct(get_gendisk_from_sdev(sdev), sbio->bio, 0);
-		if (sbio->sg)
-			shannon_sg_free(sbio->sg, sbio->sg_count);
+		if (sbio->sg) {
+			if (sbio->is_valloc)
+				shannon_sg_vfree(sbio->sg, sbio->sg_count);
+			else
+				shannon_sg_free(sbio->sg, sbio->sg_count);
+		}
 		shannon_bio_endio(sbio->bio, ret);
 		free_sbio(sbio);
 	}
@@ -701,8 +714,12 @@ void submit_sbio_task_ns(struct shannon_work_struct *work)
 	ret = shannon_submit_bio_throttling_ns(ns, sbio);
 	if (ret) {
 		shannon_end_io_acct(get_gendisk_from_ns(ns), sbio->bio, 0);
-		if (sbio->sg)
-			shannon_sg_free(sbio->sg, sbio->sg_count);
+		if (sbio->sg) {
+			if (sbio->is_valloc)
+				shannon_sg_vfree(sbio->sg, sbio->sg_count);
+			else
+				shannon_sg_free(sbio->sg, sbio->sg_count);
+		}
 		shannon_bio_endio(sbio->bio, ret);
 		free_sbio(sbio);
 		decrease_ns_pending_bios(ns);
@@ -710,6 +727,8 @@ void submit_sbio_task_ns(struct shannon_work_struct *work)
 }
 
 extern shannon_workqueue_struct_t *shannon_percpu_wq;
+extern int shannon_fio_cpumask_set(struct shannon_dev *sdev);
+
 int shannon_make_request(shannon_request_queue_t *q, shannon_bio_t *bio)
 {
 	struct shannon_dev *sdev = ((struct request_queue *)q)->queuedata;
@@ -748,9 +767,16 @@ int shannon_make_request(shannon_request_queue_t *q, shannon_bio_t *bio)
 		return 0;
 	}
 
+	if (shannon_fio_cpumask_set_enable) {
+		shannon_fio_cpumask_set(sdev);
+	}
+
 	sbio = alloc_sbio(GFP_SHANNON);
 	sbio->bio = bio;
 	sbio->lreq = NULL;
+#ifdef CONFIG_SHANNON_ATOMIC_WRITE_VERIFY
+	shannon_strncpy(sbio->atomic_write_comm, shannon_get_current_comm(), 32);
+#endif
 	if (shannon_bio_data_dir(bio))
 		sbio->dma_dir = SHANNON_DMA_TODEVICE;
 	else
@@ -790,8 +816,12 @@ end_io_acct:
 free_sg_list:
 	if (sbio->need_bounce)
 		shannon_free_bounce_pages(sbio->sg, sbio->used_sg_count);
-	if (sbio->sg)
-		shannon_sg_free(sbio->sg, sbio->sg_count);
+	if (sbio->sg_count) {
+		if (sbio->is_valloc)
+			shannon_sg_vfree(sbio->sg, sbio->sg_count);
+		else
+			shannon_sg_free(sbio->sg, sbio->sg_count);
+	}
 free_sbio:
 	free_sbio(sbio);
 	shannon_bio_endio(bio, ret);
@@ -883,8 +913,12 @@ int shannon_make_request_ns(shannon_request_queue_t *q, shannon_bio_t *bio)
 end_io_acct:
 	shannon_end_io_acct(get_gendisk_from_ns(ns), sbio->bio, 0);
 free_sg_list:
-	if (sbio->sg)
-		shannon_sg_free(sbio->sg, sbio->sg_count);
+	if (sbio->sg) {
+		if (sbio->is_valloc)
+			shannon_sg_vfree(sbio->sg, sbio->sg_count);
+		else
+			shannon_sg_free(sbio->sg, sbio->sg_count);
+	}
 free_sbio:
 	free_sbio(sbio);
 	shannon_bio_endio(bio, ret);
@@ -1330,8 +1364,12 @@ int shannon_disk_xfer_request(struct shannon_dev *sdev, struct request *rq)
 	return 0;
 
 free_sg_list:
-	if (sbio->sg)
-		shannon_sg_free(sbio->sg, sbio->sg_count);
+	if (sbio->sg) {
+		if (sbio->is_valloc)
+			shannon_sg_vfree(sbio->sg, sbio->sg_count);
+		else
+			shannon_sg_free(sbio->sg, sbio->sg_count);
+	}
 free_sbio:
 	free_sbio(sbio);
 	if (ret == -ENOMEM) {

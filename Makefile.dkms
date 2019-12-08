@@ -1,5 +1,5 @@
 #COMMIT_REV := $(shell git describe  --always --abbrev=12)
-COMMIT_REV := 3.3.0
+COMMIT_REV := 3.3.4
 DKMS_DEST ?= /var/lib/dkms/shannon/$(COMMIT_REV)/source
 KERNEL_VERSION ?= $(shell uname -r)
 # statically link for inclusion in initramfs

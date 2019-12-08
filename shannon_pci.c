@@ -551,3 +551,67 @@ int shannon_pci_get_node(shannon_pci_dev_t *pdev)
 	return -1;
 #endif
 }
+
+void get_pci_bus_info(shannon_pci_dev_t *pdev, struct shannon_pci_info *info)
+{
+	struct pci_dev *dev = ((struct pci_dev *)pdev);
+	get_pci_info((shannon_pci_dev_t *)dev->bus->self, info);
+}
+
+int shannon_pci_bus_retrain(shannon_pci_dev_t *pdev)
+{
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 29)
+	u16 ctrl, sltctl;
+	int cap;
+	struct pci_dev *tmp;
+	struct pci_dev *dev = ((struct pci_dev *)pdev);
+	int rc = -1;
+	if (!pdev)
+		return rc;
+
+	pci_save_state(pdev);
+	pci_write_config_word(pdev, PCI_COMMAND, PCI_COMMAND_INTX_DISABLE);
+	if (pci_is_root_bus(dev->bus) || dev->subordinate || !dev->bus->self) {
+		rc = -ENOTTY;
+		goto done;
+	}
+
+	list_for_each_entry(tmp, &dev->bus->devices, bus_list)
+		if (tmp != dev) {
+			rc = -ENOTTY;
+			goto done;
+		}
+
+	cap = shannon_pci_pcie_cap(dev->bus->self);
+	if (cap == 0) {
+		rc = -ENOTTY;
+		goto done;
+	}
+
+	/* disable Hotplug Interrupt */
+	pci_read_config_word(dev->bus->self, cap + PCI_EXP_SLTCTL, &sltctl);
+	pci_write_config_word(dev->bus->self, cap + PCI_EXP_SLTCTL, sltctl & ~PCI_EXP_SLTCTL_HPIE);
+	shannon_msleep(1);
+
+	/* Link disable */
+	pci_read_config_word(dev->bus->self, cap + PCI_EXP_LNKCTL, &ctrl);
+	ctrl |= PCI_EXP_LNKCTL_LD;
+	pci_write_config_word(dev->bus->self, cap + PCI_EXP_LNKCTL, ctrl);
+	shannon_msleep(200);
+
+	/* Link retrain */
+	ctrl &= ~PCI_EXP_LNKCTL_LD;
+	ctrl |= PCI_EXP_LNKCTL_RL;
+	pci_write_config_word(dev->bus->self, cap + PCI_EXP_LNKCTL, ctrl);
+	shannon_msleep(200);
+
+	/* Restore Hotplug Interrupt */
+	pci_write_config_word(dev->bus->self, cap + PCI_EXP_SLTCTL, sltctl);
+	rc = 0;
+done:
+	pci_restore_state(pdev);
+	return rc;
+#else
+	return 1;
+#endif
+}

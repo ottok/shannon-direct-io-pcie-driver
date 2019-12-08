@@ -1,3 +1,6 @@
+#ifndef SHANNON_RELEASE
+#define SHANNON_RELEASE
+#endif
 /*
  * Header file for configuration switches.
  * Copyright (C) 2014 Shannon Technology
@@ -52,6 +55,10 @@
 //"Shannon debug function for flash write/read/erase failure verify"
 //Default:off
 //#define CONFIG_SHANNON_FLASH_ERR_VERIFY
+
+//"Shannon debug function for atomic write feature verity"
+//Default:off
+//#define CONFIG_SHANNON_ATOMIC_WRITE_VERIFY
 
 #endif /* defined(CONFIG_SHANNON_DEBUG) */
 

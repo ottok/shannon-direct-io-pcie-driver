@@ -13,7 +13,7 @@ extern int shannon_sysfs_init(shannon_kobject_t *skobj);
 extern void shannon_sysfs_exit(shannon_kobject_t *skobj);
 extern int shannon_sysfs_link(shannon_kobject_t *skobj);
 extern void shannon_sysfs_unlink(shannon_kobject_t *skobj);
-extern shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev);
+extern shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev, const char *hwmon_name);
 extern void shannon_hwmon_exit(shannon_pci_dev_t *pdev, shannon_device_t *hwmon_dev);
 
 struct shannon_dev;

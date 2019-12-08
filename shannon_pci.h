@@ -58,5 +58,7 @@ extern int shannon_pci_get_max_linkspeed(struct shannon_pci_info *info);
 extern int shannon_pci_get_cur_linkspeed(struct shannon_pci_info *info);
 extern int shannon_pci_reset_function(shannon_pci_dev_t *pdev);
 extern int shannon_pci_get_node(shannon_pci_dev_t *pdev);
+extern void get_pci_bus_info(shannon_pci_dev_t *pdev, struct shannon_pci_info *info);
+extern int shannon_pci_bus_retrain(shannon_pci_dev_t *pdev);
 
 #endif /* __SHANNON_PCI_H */

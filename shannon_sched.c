@@ -184,3 +184,18 @@ int shannon_set_node_cpus_allowed(shannon_task_struct_t *k, int node)
 
 	return 0;
 }
+
+bool shannon_not_set_cpumask(shannon_cpumask_struct_t *scpumask)
+{
+	return cpumask_full((cpumask_t*)scpumask);
+}
+
+shannon_cpumask_struct_t *shannon_get_current_cpus_allowed(void)
+{
+	return &current->cpus_allowed;
+}
+
+const char *shannon_get_current_comm(void)
+{
+	return current->comm;
+}

@@ -80,12 +80,24 @@ unsigned long get_jiffies(void)
 	return jiffies;
 }
 
+void shannon_getnstimeofday(struct shannon_timeval *tv)
+{
+	struct timespec time;
+	getnstimeofday(&time);
+	tv->tv_sec = time.tv_sec;
+	tv->tv_usec = time.tv_nsec/1000;
+}
+
 void shannon_do_gettimeofday(struct shannon_timeval *tv)
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
 	struct timeval time;
 	do_gettimeofday(&time);
 	tv->tv_sec = time.tv_sec;
 	tv->tv_usec = time.tv_usec;
+#else
+	shannon_getnstimeofday(tv);
+#endif
 }
 
 // jiffies.h

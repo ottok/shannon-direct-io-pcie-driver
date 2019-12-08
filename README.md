@@ -4,7 +4,7 @@
 
 ```
 # Start a Docker container for clean builds
-docker run -it -v ${PWD}/..:/build -w /build/shannon-direct-io-pcie-driver ubuntu:trusty bash
+docker run -it -v ${PWD}/..:/build -w /build/shannon-direct-io-pcie-driver ubuntu:bionic bash
 
 # Install build tools, includes mk-build-deps
 apt update && apt install devscripts equivs --no-install-recommends --yes
@@ -35,20 +35,20 @@ sudo chown -R $USER ../
 1. Copy source to `/usr/src`:
 
 ```
-sudo cp shannon-module_3.3.0 /usr/src/shannon-3.3.0
+sudo cp shannon-module_3.4.0 /usr/src/shannon-3.4.0
 ```
 
 2. Build and install:
 
 ```
-$ sudo dkms add -m shannon -v 3.3.0
+$ sudo dkms add -m shannon -v 3.4.0
 
-Creating symlink /var/lib/dkms/shannon/3.3.0/source ->
-                /usr/src/shannon-3.3.0
+Creating symlink /var/lib/dkms/shannon/3.4.0/source ->
+                /usr/src/shannon-3.4.0
 
 DKMS: add completed.
 
-$ sudo dkms build -m shannon -v 3.3.0
+$ sudo dkms build -m shannon -v 3.4.0
 
 Kernel preparation unnecessary for this kernel.  Skipping...
 
@@ -59,18 +59,18 @@ cleaning build area....
 
 DKMS: build completed.
 
-$ sudo dkms install -m shannon -v 3.3.0
+$ sudo dkms install -m shannon -v 3.4.0
 ```
 
 3. Verify:
 
 ```
-$ ls /var/lib/dkms/shannon/3.3.0/
+$ ls /var/lib/dkms/shannon/3.4.0/
 4.15.0-48-generic  4.15.0-51-generic  source
 
 $ dkms status
-shannon, 3.3.0, 4.15.0-48-generic, x86_64: installed
-shannon, 3.3.0, 4.15.0-51-generic, x86_64: installed
+shannon, 3.4.0, 4.15.0-48-generic, x86_64: installed
+shannon, 3.4.0, 4.15.0-51-generic, x86_64: installed
 
 $ lsmod | grep shannon
 shannon 675840 0

@@ -566,7 +566,7 @@ void shannon_sysfs_unlink(shannon_kobject_t *skobj)
 	sysfs_remove_link(sdev_kobj, "shannon");
 }
 
-shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev)
+shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev, const char *hwmon_name)
 {
 #ifdef CONFIG_HWMON
 	struct device *dev = &((struct pci_dev *)pdev)->dev;
@@ -589,7 +589,7 @@ shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 10, 0)
 	hwmon_dev = hwmon_device_register(dev);
 #else
-	hwmon_dev = hwmon_device_register_with_info(dev, NULL, NULL, NULL, NULL);
+	hwmon_dev = hwmon_device_register_with_info(dev, hwmon_name, NULL, NULL, NULL);
 #endif
 	if (IS_ERR(hwmon_dev)) {
 		shannon_warn("hwmon_device_register failed!");
