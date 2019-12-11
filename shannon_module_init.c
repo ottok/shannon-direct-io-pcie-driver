@@ -493,6 +493,8 @@ extern struct shannon_list_head shannon_pool_list;
 extern shannon_mutex_t pool_sem;
 extern int shannon_major;
 extern int shannon_auto_attach;
+extern int shannon_buffer_write_policy;
+module_param(shannon_buffer_write_policy, int, S_IRUGO|S_IWUSR);
 extern int shannon_sbio_threshold;
 module_param(shannon_sbio_threshold, int, S_IRUGO|S_IWUSR);
 extern int shannon_fio_cpumask_set_enable;
@@ -561,6 +563,9 @@ extern int shannon_dynamic_irq_delay;
 module_param(shannon_dynamic_irq_delay, int, S_IRUGO|S_IWUSR);
 extern int shannon_max_wl_factor;
 module_param(shannon_max_wl_factor, int, S_IRUGO|S_IWUSR);
+
+extern int shannon_ns_maptable_autofree;
+module_param(shannon_ns_maptable_autofree, int, S_IRUGO | S_IWUSR);
 
 extern int shannon_alloc_mempool(void);
 extern void shannon_free_mempool(void);

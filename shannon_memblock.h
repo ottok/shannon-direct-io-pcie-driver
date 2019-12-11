@@ -40,18 +40,36 @@
 #define smb_unlock(lpmt, list_index)	(shannon_atomic_dec_return(&(lpmt)->map_table.memblock_lock[(list_index)]))
 #define smb_lock_by_cnt(lpmt, list_index, cnt)	(shannon_atomic_add_return((cnt), &(lpmt)->map_table.memblock_lock[(list_index)]))
 #define smb_unlock_by_cnt(lpmt, list_index, cnt)	(shannon_atomic_sub_return((cnt), &(lpmt)->map_table.memblock_lock[(list_index)]))
-#define discard_smb_trylock(lpmt, list_index)	({		\
+#define smb_simultaneously_lock(lpmt, list_index)	({	\
+	if (smb_lock((lpmt), (list_index)) < 0)	\
+		while(shannon_atomic_read(&(lpmt)->map_table.memblock_lock[(list_index)]) < 0)	\
+			;	\
+})
+#define smb_simultaneously_lock_retry(lpmt, list_index, retry)	({	\
+	int __retry_cnt = (retry);	\
+	if (__retry_cnt < 0)	\
+		__retry_cnt = 0;	\
+	smb_lock((lpmt), (list_index));	\
+	while (__retry_cnt > 0 &&	\
+			shannon_atomic_read(&(lpmt)->map_table.memblock_lock[(list_index)]) < 0)	\
+		__retry_cnt--;	\
+	if (__retry_cnt == 0)	\
+		smb_unlock((lpmt), (list_index));	\
+	__retry_cnt;	\
+})
+#define smb_simultaneously_unlock(lpmt, list_index)	(smb_unlock((lpmt), (list_index)))
+// Before invoking this, must "simultaneously" lock the smb first.
+#define smb_exclusively_trylock(lpmt, list_index)	({		\
 	u32 __ret;	\
-	if ((smb_unlock_by_cnt((lpmt), (list_index), LOCK_COUNT + 1)) == (0 - (LOCK_COUNT + 1)))	\
+	if ((smb_unlock_by_cnt((lpmt), (list_index), 0xffff)) == (0 - 0xffff + 1))	\
 		__ret = 1;	\
 	else {\
 		__ret = 0;	\
-		smb_lock_by_cnt((lpmt), (list_index), LOCK_COUNT + 1);	\
+		smb_lock_by_cnt((lpmt), (list_index), 0xffff);	\
 	}	\
 	__ret;		\
 })
-
-#define discard_smb_unlock(lpmt, list_index)	(smb_lock_by_cnt((lpmt), (list_index), LOCK_COUNT + 1))
+#define smb_exclusively_unlock(lpmt, list_index)	(smb_lock_by_cnt((lpmt), (list_index), 0xffff))
 
 #define MAPTABLE_MEMBLOCK_SIZE	(4096)
 #define TEMPTABLE_MEMBLOCK_SIZE	(1024)

@@ -187,7 +187,11 @@ int shannon_set_node_cpus_allowed(shannon_task_struct_t *k, int node)
 
 bool shannon_not_set_cpumask(shannon_cpumask_struct_t *scpumask)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 28)
 	return cpumask_full((cpumask_t*)scpumask);
+#else
+	return bitmap_full(((cpumask_t *)scpumask)->bits, (unsigned int)NR_CPUS);
+#endif
 }
 
 shannon_cpumask_struct_t *shannon_get_current_cpus_allowed(void)
