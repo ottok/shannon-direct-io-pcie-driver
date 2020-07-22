@@ -212,6 +212,7 @@ define_one_rw(read_disturb_threshold);
 define_one_rw(open_block_read_disturb_threshold);
 define_one_rw(wl_timer_interval);
 define_one_rw(max_in_wl_logicbs);
+define_one_rw(wl_iops_limit);
 define_one_rw(wl_max_erase_count);
 define_one_rw(wl_erase_count_delta_0);
 define_one_rw(wl_erase_count_delta_1);
@@ -369,6 +370,7 @@ static struct attribute *shannon_default_attrs[] = {
 	&open_block_read_disturb_threshold.attr,
 	&wl_timer_interval.attr,
 	&max_in_wl_logicbs.attr,
+	&wl_iops_limit.attr,
 	&wl_max_erase_count.attr,
 	&wl_erase_count_delta_0.attr,
 	&wl_erase_count_delta_1.attr,
@@ -582,7 +584,7 @@ shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev, const char *hwmon_
 	if (err) {
 		while (--i >= 0)
 			device_remove_file(dev, shannon_hwmon_attrs[i]);
-		shannon_warn("create hwmon sysfs files failed!");
+		shannon_warn("%s: create hwmon sysfs files failed!", hwmon_name);
 		return NULL;
 	}
 
@@ -592,7 +594,7 @@ shannon_device_t *shannon_hwmon_init(shannon_pci_dev_t *pdev, const char *hwmon_
 	hwmon_dev = hwmon_device_register_with_info(dev, hwmon_name, NULL, NULL, NULL);
 #endif
 	if (IS_ERR(hwmon_dev)) {
-		shannon_warn("hwmon_device_register failed!");
+		shannon_warn("%s: hwmon_device_register failed!", hwmon_name);
 		for (i = 0; shannon_hwmon_attrs[i]; i++)
 			device_remove_file(dev, shannon_hwmon_attrs[i]);
 		return NULL;

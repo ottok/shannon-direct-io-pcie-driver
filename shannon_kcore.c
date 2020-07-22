@@ -714,7 +714,7 @@ shannon_mempool_t *shannon_mempool_create_kmalloc_pool(int min_nr, size_t size)
 
 shannon_mempool_t *shannon_mempool_create_kmalloc_pool_node(int min_nr, size_t size, int nid)
 {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	return mempool_create_node(min_nr, mempool_kmalloc, mempool_kfree, (void *)size, GFP_KERNEL, nid);
 #else
 	return mempool_create_node(min_nr, mempool_kmalloc, mempool_kfree, (void *)size, nid);
@@ -728,7 +728,7 @@ shannon_mempool_t *shannon_mempool_create_slab_pool(int min_nr, shannon_kmem_cac
 
 shannon_mempool_t *shannon_mempool_create_slab_pool_node(int min_nr, shannon_kmem_cache_t *kc, int nid)
 {
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 5, 0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 6, 0)
 	return mempool_create_node(min_nr, mempool_alloc_slab, mempool_free_slab, (void *)kc, GFP_KERNEL, nid);
 #else
 	return mempool_create_node(min_nr, mempool_alloc_slab, mempool_free_slab, (void *)kc, nid);

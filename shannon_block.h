@@ -140,6 +140,10 @@ extern int shannon_bio_flagged(shannon_bio_t *bio, unsigned int flag);
 extern unsigned long shannon_bio_data_dir(shannon_bio_t *bio);
 extern void shannon_complete_fs_io(void *hostdata, shannon_gendisk_t *gd, struct shannon_bio *sbio);
 
+//  blk-mq.h
+extern int shannon_blk_mq_support_init(void);
+extern void shannon_blk_mq_support_exit(void);
+
 // shannon_scsi.c
 extern void end_scsi_cmnd(struct shannon_bio *sbio, enum shannon_scsi_cmd_status status, unsigned char *buf);
 

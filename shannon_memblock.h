@@ -19,7 +19,7 @@
 	if ((sdisk)->sdev_count == 1)	\
 		__slot = (lba);	\
 	else if ((_strip_size & (_strip_size - 1)) == 0)	/* order of 2 */\
-		__slot = (((lba) >> find_first_bit((void *)&_strip_size, sizeof(u32))) << (sdisk)->strip_size_shift) + ((lba) & ((sdisk)->strip_size - 1));	\
+		__slot = (((lba) >> find_first_bit((void *)&_strip_size, sizeof(u32) * 8u)) << (sdisk)->strip_size_shift) + ((lba) & ((sdisk)->strip_size - 1));	\
 	else	\
 		__slot = (((((lba) / ((sdisk)->strip_size * (sdisk)->sdev_count)) << (sdisk)->strip_size_shift)) + ((lba) & ((sdisk)->strip_size - 1)));	\
 			\

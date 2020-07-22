@@ -317,21 +317,21 @@ int init_err_injection(struct shannon_dev *sdev)
 	fake_bad_lun_size = (((unsigned long)sdev->lun_count + 8 * sizeof(long) - 1) / (8 * sizeof(long))) * sizeof(long);
 	sdev->fake_bad_lun = shannon_vmalloc(fake_bad_lun_size);
 	if (NULL == sdev->fake_bad_lun) {
-		shannon_err("Allocate memory length=%ld for fake_bad_lun failed!\n", fake_bad_lun_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld for fake_bad_lun failed!\n", fake_bad_lun_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_bad_lun, 0x00, fake_bad_lun_size);
 
 	sdev->fake_cmd_timeout_lun = shannon_vmalloc(fake_bad_lun_size);
 	if (NULL == sdev->fake_cmd_timeout_lun) {
-		shannon_err("Allocate memory length=%ld for fake_cmd_timeout_lun failed!\n", fake_bad_lun_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld for fake_cmd_timeout_lun failed!\n", fake_bad_lun_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_cmd_timeout_lun, 0x00, fake_bad_lun_size);
 
 	sdev->fake_rd_bad_lun = shannon_vmalloc(fake_bad_lun_size);
 	if (NULL == sdev->fake_rd_bad_lun) {
-		shannon_err("Allocate memory length=%ld for fake_rd_bad_lun failed!\n", fake_bad_lun_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld for fake_rd_bad_lun failed!\n", fake_bad_lun_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_rd_bad_lun, 0x00, fake_bad_lun_size);
@@ -339,7 +339,7 @@ int init_err_injection(struct shannon_dev *sdev)
 	fake_rd_bad_lunpba_size = ((unsigned long)sdev->lun_count * sdev->sb_count * sdev->logicbs_in_sibling_eblock/8UL + 4095) & ~4095UL;
 	sdev->fake_rd_bad_lunpba = shannon_vmalloc(fake_rd_bad_lunpba_size);
 	if (NULL == sdev->fake_rd_bad_lunpba) {
-		shannon_err("Allocate memory length=%ld, for fake_rd_bad_lunpba failed!\n", fake_rd_bad_lunpba_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld, for fake_rd_bad_lunpba failed!\n", fake_rd_bad_lunpba_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_rd_bad_lunpba, 0, fake_rd_bad_lunpba_size);
@@ -347,7 +347,7 @@ int init_err_injection(struct shannon_dev *sdev)
 	fake_wr_bad_lunppa_size = ((unsigned long)sdev->pages_in_eblock * sdev->planes * sdev->sb_count * sdev->lun_count/8UL + 4095) & ~4095;
 	sdev->fake_wr_bad_lunppa = shannon_vmalloc(fake_wr_bad_lunppa_size);
 	if (NULL == sdev->fake_wr_bad_lunppa) {
-		shannon_err("Allocate memory length=%ld for fake_wr_bad_lunppa failed!\n", fake_wr_bad_lunppa_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld for fake_wr_bad_lunppa failed!\n", fake_wr_bad_lunppa_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_wr_bad_lunppa, 0x00, fake_wr_bad_lunppa_size);
@@ -355,7 +355,7 @@ int init_err_injection(struct shannon_dev *sdev)
 	fake_er_bad_block_size = (((unsigned long)sdev->eblocks_in_lun * sdev->lun_count + 7)/8UL + 4095) & ~4095;
 	sdev->fake_er_bad_block = shannon_vmalloc(fake_er_bad_block_size);
 	if (NULL == sdev->fake_er_bad_block) {
-		shannon_err("Allocate memory length=%ld for fake_er_bad_block!\n", fake_er_bad_block_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld for fake_er_bad_block!\n", fake_er_bad_block_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_er_bad_block, 0x00, fake_er_bad_block_size);
@@ -364,7 +364,7 @@ int init_err_injection(struct shannon_dev *sdev)
 	fake_twin_rd_bad_lunpba_size = ((unsigned long)sdev->lun_count * sdev->logicbs_in_sibling_eblock * 2/8UL + 4095) & ~4095UL;
 	sdev->fake_twin_rd_bad_lunpba = shannon_vmalloc(fake_twin_rd_bad_lunpba_size);
 	if (NULL == sdev->fake_twin_rd_bad_lunpba) {
-		shannon_err("Allocate memory length=%ld, for fake_twin_rd_bad_lunpba failed!\n", fake_twin_rd_bad_lunpba_size);
+		shannon_err_dev(sdev, "Allocate memory length=%ld, for fake_twin_rd_bad_lunpba failed!\n", fake_twin_rd_bad_lunpba_size);
 		goto free;
 	}
 	shannon_memset(sdev->fake_twin_rd_bad_lunpba, 0x00, fake_twin_rd_bad_lunpba_size);

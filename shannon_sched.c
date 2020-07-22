@@ -196,7 +196,11 @@ bool shannon_not_set_cpumask(shannon_cpumask_struct_t *scpumask)
 
 shannon_cpumask_struct_t *shannon_get_current_cpus_allowed(void)
 {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 3, 0)
+	return &current->cpus_mask;
+#else
 	return &current->cpus_allowed;
+#endif
 }
 
 const char *shannon_get_current_comm(void)

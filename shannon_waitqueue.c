@@ -130,7 +130,7 @@ int shannon_autoremove_wake_function(shannon_wait_queue_t *wait, unsigned mode, 
 {
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 13, 0)
 #ifdef SUSE_PRODUCT_CODE
-#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
+#ifdef SHANNON_SUSE_RELEASE_BELOW_1_12_5
 	int ret = default_wake_function((wait_queue_t *)wait, mode, sync, key);
 #else
 	int ret = default_wake_function((wait_queue_entry_t *)wait, mode, sync, key);

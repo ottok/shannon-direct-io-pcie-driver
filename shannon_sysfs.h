@@ -116,6 +116,8 @@ extern shannon_ssize_t wl_timer_interval_show(struct shannon_dev *sdev, char *bu
 extern shannon_ssize_t wl_timer_interval_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t max_in_wl_logicbs_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t max_in_wl_logicbs_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
+extern shannon_ssize_t wl_iops_limit_show(struct shannon_dev *sdev, char *buf);
+extern shannon_ssize_t wl_iops_limit_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t wl_max_erase_count_show(struct shannon_dev *sdev, char *buf);
 extern shannon_ssize_t wl_max_erase_count_store(struct shannon_dev *sdev, const char *buf, shannon_size_t count);
 extern shannon_ssize_t wl_erase_count_delta_0_show(struct shannon_dev *sdev, char *buf);

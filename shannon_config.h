@@ -33,6 +33,11 @@
 #define CONFIG_SHANNON_DEBUG_CDEV
 #define	CONFIG_SHANNON_DEBUG_DUMP
 
+//"Modify Erase Count"
+//Modify the erase count of a super block.
+//Default: off
+//#define CONFIG_SHANNON_MOD_ERASE_COUNT
+
 //"Show outstanding requests in debugfs"
 #define CONFIG_SHANNON_DEBUG_REQS
 

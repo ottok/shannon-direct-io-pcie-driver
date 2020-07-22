@@ -436,8 +436,8 @@ void shannon_pci_reset_notify(struct pci_dev *pdev, bool prepare)
 
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3, 16, 0)
-	#ifdef SUSE_PRODUCT_CODE
-		#if SUSE_PRODUCT_CODE < SUSE_PRODUCT(1, 15, 0, 0)
+	#ifdef SHANNON_ON_SUSE
+		#ifdef SHANNON_SUSE_RELEASE_BELOW_1_12_5
 			struct pci_error_handlers shannon_pci_error_handlers = {
 				.reset_notify = shannon_pci_reset_notify,
 			};
@@ -460,8 +460,8 @@ void shannon_pci_reset_notify(struct pci_dev *pdev, bool prepare)
 		#endif
 	#endif
 #else
-	#ifdef RHEL_RELEASE_CODE
-		#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 2)
+	#ifdef SHANNON_ON_RHEL
+		#ifdef SHANNON_RHEL_RELEASE_OVER_7_2
 			struct pci_driver_rh shannon_pci_driver_rh = {
 				.size = sizeof(struct pci_driver_rh),
 				.reset_notify = shannon_pci_reset_notify,
@@ -482,8 +482,9 @@ static struct pci_driver shannon_driver = {
 #endif
 	.shutdown       = shannon_remove_wrapper,
 	.err_handler = &shannon_pci_error_handlers,
-#ifdef RHEL_RELEASE_CODE
-#if RHEL_RELEASE_CODE >= RHEL_RELEASE_VERSION(7, 2)
+#ifdef SHANNON_ON_RHEL
+#if (defined(SHANNON_RHEL_RELEASE_OVER_7_2)) &&   \
+	(defined(SHANNON_RHEL_RELEASE_BELOW_8_0))
 	.pci_driver_rh	= &shannon_pci_driver_rh,
 #endif
 #endif
@@ -653,6 +654,6 @@ static void __exit shannon_exit(void)
 }
 
 MODULE_LICENSE("GPL");
-MODULE_VERSION("3.4.0");
+MODULE_VERSION("3.4.1");
 module_init(shannon_init);
 module_exit(shannon_exit);

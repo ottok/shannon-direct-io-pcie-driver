@@ -13,6 +13,11 @@ else
 KERNELVER ?= $(shell uname -r)
 KERNEL_SRC = /lib/modules/$(KERNELVER)/build
 
+GCC_FALLTHROUGH_OPTION = $(shell echo "" | gcc -fsyntax-only -Wno-implicit-fallthrough -xc - 2>&1)
+ifeq ($(GCC_FALLTHROUGH_OPTION),)
+SHANNON_FLAGS += -Wno-implicit-fallthrough
+endif
+
 # Uncomment this to build EMU module directly in this dir.
 #SHANNON_FLAGS += -DCONFIG_SHANNON_EMU_MODULE
 
@@ -23,14 +28,14 @@ clean modules_clean:
 	$(MAKE) \
 	    -C $(KERNEL_SRC) \
 	    SHANNON_DRIVER_DIR=$(shell pwd) \
-	    SUBDIRS=$(shell pwd) \
+	    M=$(shell pwd) \
 	    clean
 
 debug:
 	$(MAKE) \
 	    -C $(KERNEL_SRC) \
 	    SHANNON_DRIVER_DIR=$(shell pwd) \
-	    SUBDIRS=$(shell pwd) \
+	    M=$(shell pwd) \
 	    CONFIG_BLK_DEV_SHANNON=m \
 	    CONFIG_SHANNON_EMU= \
 	    EXTRA_CFLAGS="$(SHANNON_FLAGS)" \
@@ -41,7 +46,7 @@ modules modules_install:
 	$(MAKE) \
 	    -C $(KERNEL_SRC) \
 	    SHANNON_DRIVER_DIR=$(shell pwd) \
-	    SUBDIRS=$(shell pwd) \
+	    M=$(shell pwd) \
 	    CONFIG_BLK_DEV_SHANNON=m \
 	    CONFIG_SHANNON_EMU= \
 	    EXTRA_CFLAGS="$(SHANNON_FLAGS) -DSHANNON_RELEASE" \

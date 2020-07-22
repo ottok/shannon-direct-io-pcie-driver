@@ -407,4 +407,30 @@ typedef void shannon_msix_entry_t;
 #define shannon_barrier()    barrier()
 #endif
 
+struct shannon_dev;
+struct shannon_disk;
+struct shannon_namespace;
+const char *get_cdev_name_safe(struct shannon_dev *sdev);
+const char *get_disk_name(struct shannon_disk *sdisk);
+#define shannon_err_dev(sdev, format, arg...)		\
+	shannon_err("%s: " format, get_cdev_name_safe(sdev), ##arg)
+#define shannon_warn_dev(sdev, format, arg...)		\
+	shannon_warn("%s: " format, get_cdev_name_safe(sdev), ##arg)
+#define shannon_alarm_dev(sdev, format, arg...)		\
+	shannon_alarm("%s: " format, get_cdev_name_safe(sdev), ##arg)
+#define shannon_err_disk(sdisk, format, arg...)		\
+	shannon_err("%s: " format, get_disk_name(sdisk), ##arg)
+#define shannon_warn_disk(sdisk, format, arg...)		\
+	shannon_warn("%s: " format, get_disk_name(sdisk), ##arg)
+#define shannon_recover_err_dev(sdev, format, arg...)		\
+	shannon_recover_err("%s: " format, get_cdev_name_safe(sdev), ##arg)
+#define shannon_err_ns(ns, format, arg...)			\
+	shannon_err("%s: " format, get_ns_name_safe(ns), ##arg)
+#define shannon_warn_ns(ns, format, arg...)			\
+	shannon_warn("%s: " format, get_ns_name_safe(ns), ##arg)
+#define shannon_err_pool(spool, format, arg...)			\
+	shannon_err("%s: " format, get_pool_name_safe(spool), ##arg)
+#define shannon_warn_pool(spool, format, arg...)			\
+	shannon_warn("%s: " format, get_pool_name_safe(spool), ##arg)
+
 #endif /* __SHANNON_KCORE_H */

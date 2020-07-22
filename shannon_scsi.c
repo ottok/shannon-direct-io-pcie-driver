@@ -163,7 +163,7 @@ int shannon_fill_from_dev_buffer(void *scsi_cmnd, unsigned char *arr, int arr_le
 	return 0;
 }
 
-#else
+#elif LINUX_VERSION_CODE < KERNEL_VERSION(5, 1, 0)
 /* Returns 0 if ok else (DID_ERROR << 16). Sets scp->resid . */
 int shannon_fill_from_dev_buffer(void *scsi_cmnd, unsigned char *arr, int arr_len)
 {
@@ -190,6 +190,25 @@ int shannon_fill_from_dev_buffer(void *scsi_cmnd, unsigned char *arr, int arr_le
 	return 0;
 }
 
+#else // LINUX_VERSION_CODE >= KERNEL_VERSION(5, 1, 0)
+int shannon_fill_from_dev_buffer(void *scsi_cmnd, unsigned char *arr, int arr_len)
+{
+	struct scsi_cmnd *scp = (struct scsi_cmnd *)scsi_cmnd;
+	int act_len;
+	struct scsi_data_buffer *sdb = &scp->sdb;
+
+	if (!sdb->length)
+		return 0;
+	if (scp->sc_data_direction != DMA_FROM_DEVICE)
+		return DID_ERROR << 16;
+
+	act_len = sg_copy_from_buffer(sdb->table.sgl, sdb->table.nents,
+					arr, arr_len);
+	// scsi_set_resid(scp, scsi_bufflen(scp) - act_len);
+	scsi_set_resid(scp, scsi_bufflen(scp) - act_len);
+
+	return 0;
+}
 #endif /* end of LINUX_VERSION_CODE for shannon_fill_from_dev_buffer() */
 
 void shannon_build_sense_buffer(char *sbuff, int key, int asc, int asq)
@@ -431,7 +450,11 @@ static struct scsi_host_template shannon_scsi_template = {
 	.sg_tablesize           = SG_ALL,
 	.cmd_per_lun            = 0x3fff,
 	.max_sectors            = 0xffff, /* The max size of a bio */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5, 0, 0)
 	.use_clustering         = DISABLE_CLUSTERING,
+#else
+	.dma_boundary		= PAGE_SIZE - 1,
+#endif
 };
 
 extern void shannon_remove(void *data, shannon_pci_dev_t *pdev);
